@@ -2,6 +2,7 @@
 
 public class StudentDetails
 {
+    public int Id { get; set; }
     public int StudentId { get; set; }
     public decimal? GPA { get; set; }
     public decimal? AttendanceRate { get; set; }
