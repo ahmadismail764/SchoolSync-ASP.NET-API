@@ -1,13 +1,7 @@
 ﻿namespace SchoolSync.Domain.Entities;
 
-/// <summary>
-/// Central junction entity representing a student's enrollment in a subject for a specific term
-/// Tracks enrollment date, grades, and active status
-/// Unique constraint: one student can only enroll once per subject per term
-/// </summary>
 public class Enrollment
 {
-    public int Id { get; set; }
     public int StudentId { get; set; }
     public int SubjectId { get; set; }
     public int TermId { get; set; }

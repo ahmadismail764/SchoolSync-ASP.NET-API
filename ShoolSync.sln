@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36401.2 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShoolSync.API", "ShoolSync.API\ShoolSync.API.csproj", "{60A99CFA-134E-49F4-9659-EC22E0B7A717}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SchoolSync.API", "ShoolSync.API\SchoolSync.API.csproj", "{60A99CFA-134E-49F4-9659-EC22E0B7A717}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SchoolSync.App", "SchoolSync.App\SchoolSync.App.csproj", "{1398D69E-8C98-4B71-B69C-A13121FC7B38}"
 EndProject

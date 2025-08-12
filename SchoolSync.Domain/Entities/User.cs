@@ -12,4 +12,8 @@ public class User
     public string Role { get; set; } = "Student";
     public int SchoolId { get; set; }
     public School School { get; set; } = null!;
+
+    public List<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
+
+    public StudentDetails? Details { get; set; }
 }
