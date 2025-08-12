@@ -12,8 +12,8 @@ using SchoolSync.Infra.Persistence;
 namespace SchoolSync.Infra.Migrations
 {
     [DbContext(typeof(DBContext))]
-    [Migration("20250812094455_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250812110821_InitialCreate2")]
+    partial class InitialCreate2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -100,6 +100,23 @@ namespace SchoolSync.Infra.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Organizations");
+                });
+
+            modelBuilder.Entity("SchoolSync.Domain.Entities.Role", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("RoleName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Roles");
                 });
 
             modelBuilder.Entity("SchoolSync.Domain.Entities.School", b =>
@@ -290,9 +307,8 @@ namespace SchoolSync.Infra.Migrations
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
 
                     b.Property<int>("SchoolId")
                         .HasColumnType("int");
@@ -302,6 +318,8 @@ namespace SchoolSync.Infra.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
 
                     b.HasIndex("SchoolId");
 
@@ -377,9 +395,9 @@ namespace SchoolSync.Infra.Migrations
                         .IsRequired();
 
                     b.HasOne("SchoolSync.Domain.Entities.User", "Teacher")
-                        .WithMany()
+                        .WithMany("Subjects")
                         .HasForeignKey("TeacherId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("School");
@@ -400,11 +418,19 @@ namespace SchoolSync.Infra.Migrations
 
             modelBuilder.Entity("SchoolSync.Domain.Entities.User", b =>
                 {
+                    b.HasOne("SchoolSync.Domain.Entities.Role", "Role")
+                        .WithMany("Users")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("SchoolSync.Domain.Entities.School", "School")
                         .WithMany("PeopleHere")
                         .HasForeignKey("SchoolId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Role");
 
                     b.Navigation("School");
                 });
@@ -412,6 +438,11 @@ namespace SchoolSync.Infra.Migrations
             modelBuilder.Entity("SchoolSync.Domain.Entities.Organization", b =>
                 {
                     b.Navigation("Schools");
+                });
+
+            modelBuilder.Entity("SchoolSync.Domain.Entities.Role", b =>
+                {
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("SchoolSync.Domain.Entities.School", b =>
@@ -443,6 +474,8 @@ namespace SchoolSync.Infra.Migrations
                     b.Navigation("Details");
 
                     b.Navigation("Enrollments");
+
+                    b.Navigation("Subjects");
                 });
 #pragma warning restore 612, 618
         }

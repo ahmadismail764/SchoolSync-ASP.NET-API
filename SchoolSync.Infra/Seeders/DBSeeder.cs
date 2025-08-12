@@ -11,193 +11,133 @@ internal class DBSeeder(DBContext context) : IDBSeeder
     internal DbSet<SchoolYear> SchoolYears { get; set; } = context.SchoolYears;
     internal DbSet<User> Users { get; set; } = context.Users;
 
-    internal DbSet<StudentDetails> StudentDetails { get; set; }
+    internal DbSet<StudentDetails> StudentDetails { get; set; } = context.StudentDetails;
     internal DbSet<Subject> Subjects { get; set; } = context.Subjects;
     internal DbSet<Term> Terms { get; set; } = context.Terms;
     internal DbSet<Enrollment> Enrollments { get; set; } = context.Enrollments;
 
+    internal DbSet<Role> Roles { get; set; } = context.Roles;
+
     public async Task SeedAsync()
     {
-        await SeedOrganizationsAsync();
-        await SeedSchoolsAsync();
-        await SeedSchoolYearsAsync();
-        await SeedTermsAsync();
-        await SeedUsersAsync();        
-        await SeedSubjectsAsync();
+        await SeedRolesAsync();
+        await SeedOrganizationsSchoolsUsersSubjectsAsync();
         await SeedStudentDetailsAsync();
         await SeedEnrollmentsAsync();
     }
 
-    private async Task SeedOrganizationsAsync() {
-        if (!await Organizations.AnyAsync())
-        {
-            var organizations = new List<Organization>
-            {
-                new Organization
-                {
-                    Name = "Springfield Education District",
-                    Description = "A leading educational organization serving the Springfield community",
-                    Address = "100 Education Blvd, Springfield, IL 62701",
-                    PhoneNumber = "+1-217-555-0100",
-                    Email = "info@springfieldedu.org"
-                },
-                new Organization
-                {
-                    Name = "Metro Learning Network",
-                    Description = "Innovative education solutions for metropolitan areas",
-                    Address = "200 Metro Plaza, Springfield, IL 62702",
-                    PhoneNumber = "+1-217-555-0200",
-                    Email = "contact@metrolearning.org"
-                }
-            };
-
-            await Organizations.AddRangeAsync(organizations);
-            await context.SaveChangesAsync(); 
-        }
-    }
-    private async Task SeedSchoolsAsync()
+    private async Task SeedRolesAsync()
     {
-        if (!await Schools.AnyAsync())
+        if (!await Roles.AnyAsync())
         {
-            var org1 = await Organizations.FirstAsync(o => o.Name == "Springfield Education District");
-            var org2 = await Organizations.FirstAsync(o => o.Name == "Metro Learning Network");
-
-            var schools = new List<School>
+            var roles = new List<Role>
             {
-                new School
-                {
-                    Name = "Lincoln High School",
-                    Address = "123 Main St, Springfield, IL 62701",
-                    PhoneNumber = "+1-217-555-0123",
-                    Email = "admin@lincolnhigh.edu",
-                    OrganizationId = org1.Id
-                },
-                new School
-                {
-                    Name = "Washington Elementary",
-                    Address = "456 Oak Ave, Springfield, IL 62702",
-                    PhoneNumber = "+1-217-555-0456",
-                    Email = "office@washington.edu",
-                    OrganizationId = org2.Id
-                }
+                new Role { Name = "Student" },
+                new Role { Name = "Teacher" },
+                new Role { Name = "Admin" }
             };
-
-            await Schools.AddRangeAsync(schools);
+            await Roles.AddRangeAsync(roles);
             await context.SaveChangesAsync();
         }
     }
 
-    private async Task SeedSchoolYearsAsync()
+    private async Task SeedOrganizationsSchoolsUsersSubjectsAsync()
     {
-        if (!await SchoolYears.AnyAsync())
-        {
-            var school1 = await Schools.FirstAsync(s => s.Name == "Lincoln High School");
+        if (await Organizations.AnyAsync())
+            return;
 
-            var schoolYears = new List<SchoolYear>
+        // Get role IDs
+        var studentRole = await Roles.FirstAsync(r => r.Name == "Student");
+        var teacherRole = await Roles.FirstAsync(r => r.Name == "Teacher");
+
+        // 2 orgs
+        var orgs = new List<Organization>
+        {
+            new Organization { Name = "Springfield Education District", Description = "A leading educational organization serving the Springfield community", Address = "100 Education Blvd, Springfield, IL 62701", PhoneNumber = "+1-217-555-0100", Email = "info@springfieldedu.org" },
+            new Organization { Name = "Metro Learning Network", Description = "Innovative education solutions for metropolitan areas", Address = "200 Metro Plaza, Springfield, IL 62702", PhoneNumber = "+1-217-555-0200", Email = "contact@metrolearning.org" }
+        };
+        await Organizations.AddRangeAsync(orgs);
+        await context.SaveChangesAsync();
+
+        // 1 school per org
+        var schools = new List<School>
+        {
+            new School { Name = "Lincoln High School", Address = "123 Main St, Springfield, IL 62701", PhoneNumber = "+1-217-555-0123", Email = "admin@lincolnhigh.edu", OrganizationId = orgs[0].Id },
+            new School { Name = "Washington Elementary", Address = "456 Oak Ave, Springfield, IL 62702", PhoneNumber = "+1-217-555-0456", Email = "office@washington.edu", OrganizationId = orgs[1].Id }
+        };
+        await Schools.AddRangeAsync(schools);
+        await context.SaveChangesAsync();
+
+        // 3 teachers and 3 students per school
+        var users = new List<User>();
+        int userCounter = 1;
+        foreach (var school in schools)
+        {
+            for (int i = 1; i <= 3; i++)
             {
-                new SchoolYear
+                users.Add(new User
                 {
-                    Year = 2024,
-                    StartDate = new DateTime(2024, 8, 15),
-                    EndDate = new DateTime(2025, 6, 15),
-                    SchoolId = school1.Id
-                },
-                new SchoolYear
+                    FullName = $"Teacher {i} ({school.Name})",
+                    Email = $"teacher{i}.{school.Name.Replace(" ", "").ToLower()}@school.edu",
+                    Username = $"teacher{i}_{school.Name.Replace(" ", "").ToLower()}",
+                    SchoolId = school.Id,
+                    RoleId = teacherRole.Id
+                });
+            }
+            for (int i = 1; i <= 3; i++)
+            {
+                users.Add(new User
                 {
-                    Year = 2025,
-                    StartDate = new DateTime(2025, 8, 15),
-                    EndDate = new DateTime(2026, 6, 15),
-                    SchoolId = school1.Id
-                }
-            };
-
-            await SchoolYears.AddRangeAsync(schoolYears);
-            await context.SaveChangesAsync();
+                    FullName = $"Student {i} ({school.Name})",
+                    Email = $"student{i}.{school.Name.Replace(" ", "").ToLower()}@school.edu",
+                    Username = $"student{i}_{school.Name.Replace(" ", "").ToLower()}",
+                    SchoolId = school.Id,
+                    RoleId = studentRole.Id
+                });
+            }
         }
-    }
+        await Users.AddRangeAsync(users);
+        await context.SaveChangesAsync();
 
-    private async Task SeedTermsAsync()
-    {
-        if (!await Terms.AnyAsync())
+        // 3 subjects per school, each assigned to a teacher from that school
+        var allTeachers = await Users.Where(u => u.RoleId == teacherRole.Id).ToListAsync();
+        var subjects = new List<Subject>();
+        foreach (var school in schools)
         {
-            var schoolYear2024 = await SchoolYears.FirstAsync(sy => sy.Year == 2024);
-            var schoolYear2025 = await SchoolYears.FirstAsync(sy => sy.Year == 2025);
+            var teachers = allTeachers.Where(t => t.SchoolId == school.Id).ToList();
+            for (int i = 1; i <= 3; i++)
+            {
+                subjects.Add(new Subject
+                {
+                    Name = $"Subject {i} ({school.Name})",
+                    Code = $"SUBJ{i}{school.Id}",
+                    Credits = 3,
+                    SchoolId = school.Id,
+                    TeacherId = teachers[(i-1)%teachers.Count].Id
+                });
+            }
+        }
+        await Subjects.AddRangeAsync(subjects);
+        await context.SaveChangesAsync();
 
+        // Add a school year and terms for each school
+        foreach (var school in schools)
+        {
+            var schoolYear = new SchoolYear
+            {
+                Year = 2024,
+                StartDate = new DateTime(2024, 8, 15),
+                EndDate = new DateTime(2025, 6, 15),
+                SchoolId = school.Id
+            };
+            await SchoolYears.AddAsync(schoolYear);
+            await context.SaveChangesAsync();
             var terms = new List<Term>
             {
-                new Term { Name = "Fall 2024", StartDate = new DateTime(2024, 8, 15), EndDate = new DateTime(2024, 12, 20), SchoolYearId = schoolYear2024.Id },
-                new Term { Name = "Spring 2025", StartDate = new DateTime(2025, 1, 15), EndDate = new DateTime(2025, 6, 15), SchoolYearId = schoolYear2024.Id },
-                new Term { Name = "Fall 2025", StartDate = new DateTime(2025, 8, 15), EndDate = new DateTime(2025, 12, 20), SchoolYearId = schoolYear2025.Id },
-                new Term { Name = "Spring 2026", StartDate = new DateTime(2026, 1, 15), EndDate = new DateTime(2026, 6, 15), SchoolYearId = schoolYear2025.Id }
+                new Term { Name = $"Fall 2024 ({school.Name})", StartDate = new DateTime(2024, 8, 15), EndDate = new DateTime(2024, 12, 20), SchoolYearId = schoolYear.Id },
+                new Term { Name = $"Spring 2025 ({school.Name})", StartDate = new DateTime(2025, 1, 15), EndDate = new DateTime(2025, 6, 15), SchoolYearId = schoolYear.Id }
             };
-
             await Terms.AddRangeAsync(terms);
-            await context.SaveChangesAsync();
-        }
-    }
-
-    private async Task SeedUsersAsync()
-    {
-        if (!await Users.AnyAsync())
-        {
-            var school1 = await Schools.FirstAsync(s => s.Name == "Lincoln High School");
-            var school2 = await Schools.FirstAsync(s => s.Name == "Washington Elementary");
-
-            var users = new List<User>
-            {
-                new User
-                {
-                    FullName = "Michael Wilson", 
-                    Email = "michael.wilson@student.lincoln.edu", 
-                    Username = "michael.wilson", 
-                    SchoolId = school1.Id 
-                },
-                new User
-                {
-                    FullName = "Sarah Davis", 
-                    Email = "sarah.davis@student.lincoln.edu", 
-                    Username = "sarah.davis", 
-                    SchoolId = school1.Id 
-                },
-                new User
-                {
-                    FullName = "David Miller", 
-                    Email = "david.miller@student.lincoln.edu", 
-                    Username = "david.miller", 
-                    SchoolId = school1.Id 
-                },
-                new User
-                {
-                    FullName = "Emma Garcia", 
-                    Email = "emma.garcia@student.washington.edu", 
-                    Username = "emma.garcia", 
-                    SchoolId = school2.Id 
-                },
-                new User 
-                {
-                    FullName = "James Martinez", 
-                    Email = "james.martinez@student.washington.edu", 
-                    Username = "james.martinez", 
-                    SchoolId = school2.Id 
-                },
-                new User
-                {
-                    FullName = "Oliva Johnson",
-                    Email = "olivia.johnson@teacer.lincoln.edu",
-                    Username = "olivia.johnson",
-                    SchoolId = school1.Id,
-                    Role = "Teacher"
-                },
-                new User
-                {
-                    FullName = "Liam Brown",
-                    Email = "liam.brown@teacer.lincoln.edu",
-                    Username = "liam.brown",
-                    SchoolId = school2.Id,
-                    Role = "Teacher"
-                }
-            };
-            await Users.AddRangeAsync(users);
             await context.SaveChangesAsync();
         }
     }
@@ -205,29 +145,21 @@ internal class DBSeeder(DBContext context) : IDBSeeder
     private async Task SeedStudentDetailsAsync()
     {
         if (await StudentDetails.AnyAsync())
-        {
-            return; // Prevent duplicate inserts
-        }
-
-        // Get all users that are students (no Role or Role is null/empty)
-        var students = await Users
-            .Where(u => u.Role == "Student")
-            .ToListAsync();
-
+            return;
+        var studentRole = await Roles.FirstAsync(r => r.Name == "Student");
+        var students = await Users.Where(u => u.RoleId == studentRole.Id).ToListAsync();
         var details = new List<StudentDetails>();
-
         foreach (var student in students)
         {
             details.Add(new StudentDetails
             {
                 StudentId = student.Id,
-                GPA = 4.0m, // Default GPA
-                AttendanceRate = 1.0m, // 100% attendance
-                ParticipationRating = 1.0m, // Full participation
+                GPA = 4.0m,
+                AttendanceRate = 1.0m,
+                ParticipationRating = 1.0m,
                 IsActive = true
             });
         }
-
         if (details.Count > 0)
         {
             await StudentDetails.AddRangeAsync(details);
@@ -235,101 +167,35 @@ internal class DBSeeder(DBContext context) : IDBSeeder
         }
     }
 
-    private async Task SeedSubjectsAsync()
-    {
-        if (!await Subjects.AnyAsync())
-        {
-            // Seed term-agnostic subjects with SchoolId
-            var school1 = await Schools.FirstAsync(s => s.Name == "Lincoln High School");
-            var school2 = await Schools.FirstAsync(s => s.Name == "Washington Elementary");
-
-            var subjects = new List<Subject>
-            {
-                new Subject {
-                    Name = "Algebra I",
-                    Code = "MATH101",
-                    Credits = 3,
-                    SchoolId = school1.Id
-                },
-                new Subject {
-                    Name = "English Literature",
-                    Code = "ENG201",
-                    Credits = 3,
-                    SchoolId = school1.Id
-                },
-                new Subject {
-                    Name = "Chemistry",
-                    Code = "SCI301",
-                    Credits = 4,
-                    SchoolId = school1.Id
-                },
-                new Subject { 
-                    Name = "Elementary Math",
-                    Code = "MATH001",
-                    Credits = 2,
-                    SchoolId = school2.Id
-                },
-                new Subject {
-                    Name = "Reading Fundamentals",
-                    Code = "ENG001",
-                    Credits = 2,
-                    SchoolId = school2.Id
-                }
-            };
-
-            await Subjects.AddRangeAsync(subjects);
-            await context.SaveChangesAsync(); // Save to get auto-generated IDs
-        }
-    }
-
     private async Task SeedEnrollmentsAsync()
     {
-        // Prevent duplicate inserts when seeding multiple times
         if (await Enrollments.AnyAsync())
-        {
             return;
-        }
-        // Get all the saved entities with their IDs
-        var students = await Users.Where(s => s.Role == "Student").ToListAsync();
-        var subjects = await Subjects.ToListAsync();
-        var fallTerm = await Terms.FirstAsync(t => t.Name == "Fall 2024");
-        var springTerm = await Terms.FirstAsync(t => t.Name == "Spring 2025");
-
-        var enrollments = new List<Enrollment>
+        var studentRole = await Roles.FirstAsync(r => r.Name == "Student");
+        var students = await Users.Where(u => u.RoleId == studentRole.Id).ToListAsync();
+        var schools = await Schools.ToListAsync();
+        foreach (var school in schools)
         {
-            // High school students (Michael, Sarah, David)
-            new Enrollment {
-                StudentId = students.First(s => s.FullName == "Michael Wilson").Id,
-                SubjectId = subjects.First(s => s.Code == "MATH101").Id,
-                TermId = fallTerm.Id,
-                EnrollmentDate = DateTime.UtcNow.AddMonths(-2),
-                IsActive = true
-            },
-            new Enrollment {
-                StudentId = students.First(s => s.FullName == "Sarah Davis").Id,
-                SubjectId = subjects.First(s => s.Code == "ENG201").Id,
-                TermId = fallTerm.Id,
-                EnrollmentDate = DateTime.UtcNow.AddMonths(-2),
-                IsActive = true
-            },
-            
-            // Elementary students (Emma, James)
-            new Enrollment {
-                StudentId = students.First(s => s.FullName == "Emma Garcia").Id,
-                SubjectId = subjects.First(s => s.Code == "MATH001").Id,
-                TermId = fallTerm.Id,
-                EnrollmentDate = DateTime.UtcNow.AddMonths(-2),
-                IsActive = true
-            },
-            new Enrollment {
-                StudentId = students.First(s => s.FullName == "James Martinez").Id,
-                SubjectId = subjects.First(s => s.Code == "ENG001").Id,
-                TermId = fallTerm.Id,
-                EnrollmentDate = DateTime.UtcNow.AddMonths(-2),
-                IsActive = true
+            var schoolStudents = students.Where(s => s.SchoolId == school.Id).ToList();
+            var schoolSubjects = await Subjects.Where(sub => sub.SchoolId == school.Id).ToListAsync();
+            var term = await Terms.FirstAsync(t => t.SchoolYear.SchoolId == school.Id);
+            var enrollments = new List<Enrollment>();
+            foreach (var student in schoolStudents)
+            {
+                foreach (var subject in schoolSubjects)
+                {
+                    enrollments.Add(new Enrollment
+                    {
+                        StudentId = student.Id,
+                        SubjectId = subject.Id,
+                        TermId = term.Id,
+                        EnrollmentDate = DateTime.UtcNow,
+                        IsActive = true
+                    });
+                }
             }
-        };
-        await Enrollments.AddRangeAsync(enrollments);
-        await context.SaveChangesAsync();
+            await Enrollments.AddRangeAsync(enrollments);
+            await context.SaveChangesAsync();
+        }
     }
 }

@@ -15,6 +15,7 @@ public class DBContext : DbContext
     public DbSet<Enrollment> Enrollments { get; set; }
     public DbSet<StudentDetails> StudentDetails { get; set; }
 
+    public DbSet<Role> Roles { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // Enrollment relations start here /////////////////////////////
@@ -44,7 +45,7 @@ public class DBContext : DbContext
             .HasIndex(e => new { e.StudentId, e.SubjectId, e.TermId })
             .IsUnique();
         // Enrollment relations end here /////////////////////////////
-        
+
         // Subject relations start here /////////////////////////////
         // 1. Subject has foreign key to school
         modelBuilder.Entity<Subject>()
@@ -52,6 +53,13 @@ public class DBContext : DbContext
             .WithMany(sc => sc.Subjects)
             .HasForeignKey(sub => sub.SchoolId)
             .OnDelete(DeleteBehavior.Restrict);
+        //2. Subject has foreign key to teacher
+        modelBuilder.Entity<Subject>()
+            .HasOne(sub => sub.Teacher)
+            .WithMany(t => t.Subjects)
+            .HasForeignKey(sub => sub.TeacherId)
+            .OnDelete(DeleteBehavior.Restrict);
+        // 3. Subject points to a TEACHER -- Applied on Application Layer, biz logic
         // Subject relations end here /////////////////////////////
 
         // School relations start here /////////////////////////////
@@ -62,13 +70,19 @@ public class DBContext : DbContext
                     .HasForeignKey(s => s.OrganizationId)
                     .OnDelete(DeleteBehavior.Restrict);
         // School relations end here ///////////////////////////////
-        
+
         // User relations start here /////////////////////////////
         // 1. User has foreign key to School
         modelBuilder.Entity<User>()
                     .HasOne(s => s.School)
                     .WithMany(o => o.PeopleHere)
                     .HasForeignKey(s => s.SchoolId)
+                    .OnDelete(DeleteBehavior.Restrict);
+        // 2. User has foreign key to Role
+        modelBuilder.Entity<User>()
+                    .HasOne(s => s.Role)
+                    .WithMany(o => o.Users)
+                    .HasForeignKey(s => s.RoleId)
                     .OnDelete(DeleteBehavior.Restrict);
         // School relations end here ///////////////////////////////
 

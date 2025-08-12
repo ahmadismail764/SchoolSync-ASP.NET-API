@@ -9,11 +9,15 @@ public class User
     public string? PhoneNumber { get; set; }
     public bool IsActive { get; set; } = true;
 
-    public string Role { get; set; } = "Student";
+    public int RoleId { get; set; } = 1;
     public int SchoolId { get; set; }
     public School School { get; set; } = null!;
 
+    public Role Role { get; set; } = null!;
+
     public List<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
 
+    public List<Subject> Subjects { get; set; } = new List<Subject>();
+  
     public StudentDetails? Details { get; set; }
 }
