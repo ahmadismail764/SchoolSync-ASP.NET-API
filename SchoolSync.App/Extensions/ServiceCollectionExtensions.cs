@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using SchoolSync.Domain.IServices;
 using SchoolSync.App.Services;
+using AutoMapper;
+using System.Reflection;
 
 namespace SchoolSync.App.Extensions;
 
@@ -16,6 +18,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ISubjectService, SubjectService>();
         services.AddScoped<ITermService, TermService>();
         services.AddScoped<ISchoolYearService, SchoolYearService>();
+        services.AddAutoMapper(Assembly.GetExecutingAssembly());
         return services;
     }
 }
