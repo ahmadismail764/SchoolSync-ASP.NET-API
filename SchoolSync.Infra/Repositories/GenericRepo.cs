@@ -17,11 +17,17 @@ public class GenericRepo<T>(DBContext context) : IGenericRepo<T> where T : class
     public async Task<IEnumerable<T>> GetRangeWhereAsync(Expression<Func<T, bool>> predicate) =>
         await dbSet.Where(predicate).ToListAsync();
 
-    public async Task CreateAsync(T entity) => await dbSet.AddAsync(entity);
+    public async Task<T> CreateAsync(T entity)
+    {
+        await dbSet.AddAsync(entity);
+        // SaveChangesAsync will be called in the service layer
+        return entity;
+    }
 
     public async Task UpdateAsync(T entity)
     {
         dbSet.Update(entity);
+        // SaveChangesAsync will be called in the service layer
         await Task.CompletedTask;
     }
 
@@ -40,6 +46,7 @@ public class GenericRepo<T>(DBContext context) : IGenericRepo<T> where T : class
             }
             dbSet.Update(item);
         }
+        // SaveChangesAsync will be called in the service layer
     }
 
     public async Task DeleteAsync(T entity)
@@ -50,7 +57,7 @@ public class GenericRepo<T>(DBContext context) : IGenericRepo<T> where T : class
             prop.SetValue(entity, false);
             dbSet.Update(entity);
         }
-        // else do nothing (or throw if you want strict behavior)
+        // SaveChangesAsync will be called in the service layer
         await Task.CompletedTask;
     }
 
@@ -66,5 +73,11 @@ public class GenericRepo<T>(DBContext context) : IGenericRepo<T> where T : class
                 dbSet.Update(item);
             }
         }
+        // SaveChangesAsync will be called in the service layer
+    }
+
+    public async Task SaveChangesAsync()
+    {
+        await context.SaveChangesAsync();
     }
 }
