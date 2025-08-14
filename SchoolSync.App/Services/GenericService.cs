@@ -9,7 +9,7 @@ public class GenericService<T>(IGenericRepo<T> repo) : IGenericService<T> where 
 
     public async Task<T?> GetByIdAsync(int id) => await _repo.GetAsync(id);
     public async Task<IEnumerable<T>> GetAllAsync() => await _repo.GetAllAsync();
-    public async Task<T> CreateAsync(T entity)
+    public virtual async Task<T> CreateAsync(T entity)
     {
         var created = await _repo.CreateAsync(entity);
         await _repo.SaveChangesAsync();

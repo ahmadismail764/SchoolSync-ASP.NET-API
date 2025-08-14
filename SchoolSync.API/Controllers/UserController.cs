@@ -10,6 +10,26 @@ namespace SchoolSync.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize(Roles = "Admin")]
-public class UserController(IUserService service, IMapper mapper)
-    : GenericController<User, UserDto, CreateUserDto, UpdateUserDto>(service, mapper)
-{ }
+public class UserController : GenericController<User, UserDto, CreateUserDto, UpdateUserDto>
+{
+    private readonly IUserService _service;
+    private readonly IMapper _mapper;
+
+    public UserController(IUserService service, IMapper mapper)
+        : base(service, mapper)
+    {
+        _service = service;
+        _mapper = mapper;
+    }
+
+    public override async Task<ActionResult<UserDto>> Create([FromBody] CreateUserDto dto)
+    {
+        var entity = _mapper.Map<User>(dto);
+        if (!string.IsNullOrEmpty(dto.Password))
+        {
+            entity.PasswordHash = dto.Password;
+        }
+        var created = await _service.CreateAsync(entity);
+        return CreatedAtAction(nameof(GetById), new { id = created.Id }, _mapper.Map<UserDto>(created));
+    }
+}

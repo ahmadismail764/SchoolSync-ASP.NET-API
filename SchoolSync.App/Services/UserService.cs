@@ -20,4 +20,12 @@ public class UserService(IUserRepo userRepo) : GenericService<User>(userRepo), I
             return false;
         return await Task.FromResult(BCrypt.Net.BCrypt.Verify(password, user.PasswordHash));
     }
+    public override async Task<User> CreateAsync(User entity)
+    {
+        if (!string.IsNullOrEmpty(entity.PasswordHash))
+        {
+            entity.PasswordHash = BCrypt.Net.BCrypt.HashPassword(entity.PasswordHash);
+        }
+        return await base.CreateAsync(entity);
+    }
 }

@@ -7,4 +7,5 @@ public class CreateUserDto
     public string Username { get; set; } = string.Empty;
     public int SchoolId { get; set; }
     public int RoleId { get; set; }
+    public string Password { get; set; } = string.Empty;
 }
