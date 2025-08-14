@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SchoolSync.Domain.Entities;
 using SchoolSync.Domain.IServices;
@@ -8,6 +9,7 @@ namespace SchoolSync.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Roles = "Admin")]
 public class UserController(IUserService service, IMapper mapper)
     : GenericController<User, UserDto, CreateUserDto, UpdateUserDto>(service, mapper)
 { }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SchoolSync.Domain.Entities;
 using SchoolSync.Infra.Persistence;
+using BCrypt.Net;
 namespace SchoolSync.Infra.Seeders;
 
 internal class DBSeeder(DBContext context) : IDBSeeder
@@ -83,17 +84,18 @@ internal class DBSeeder(DBContext context) : IDBSeeder
             var roles = await Roles.ToListAsync();
             var teacherRole = roles.First(r => r.Name == "Teacher");
             var studentRole = roles.First(r => r.Name == "Student");
+            var password = BCrypt.Net.BCrypt.HashPassword("Password123!");
             var users = new List<User>
             {
                 // Teachers
-                new User { FullName = "Alice Smith", Email = "alice.smith@greenfieldhigh.edu", Username = "asmith", SchoolId = schools[0].Id, RoleId = teacherRole.Id },
-                new User { FullName = "Bob Johnson", Email = "bob.johnson@greenfieldhigh.edu", Username = "bjohnson", SchoolId = schools[0].Id, RoleId = teacherRole.Id },
-                new User { FullName = "Carol White", Email = "carol.white@blueriverprimary.edu", Username = "cwhite", SchoolId = schools[1].Id, RoleId = teacherRole.Id },
+                new User { FullName = "Alice Smith", Email = "alice.smith@greenfieldhigh.edu", Username = "asmith", SchoolId = schools[0].Id, RoleId = teacherRole.Id, PasswordHash = password },
+                new User { FullName = "Bob Johnson", Email = "bob.johnson@greenfieldhigh.edu", Username = "bjohnson", SchoolId = schools[0].Id, RoleId = teacherRole.Id, PasswordHash = password },
+                new User { FullName = "Carol White", Email = "carol.white@blueriverprimary.edu", Username = "cwhite", SchoolId = schools[1].Id, RoleId = teacherRole.Id, PasswordHash = password },
                 // Students
-                new User { FullName = "David Lee", Email = "david.lee@greenfieldhigh.edu", Username = "dlee", SchoolId = schools[0].Id, RoleId = studentRole.Id },
-                new User { FullName = "Eva Brown", Email = "eva.brown@greenfieldhigh.edu", Username = "ebrown", SchoolId = schools[0].Id, RoleId = studentRole.Id },
-                new User { FullName = "Frank Green", Email = "frank.green@blueriverprimary.edu", Username = "fgreen", SchoolId = schools[1].Id, RoleId = studentRole.Id },
-                new User { FullName = "Grace Kim", Email = "grace.kim@blueriverprimary.edu", Username = "gkim", SchoolId = schools[1].Id, RoleId = studentRole.Id }
+                new User { FullName = "David Lee", Email = "david.lee@greenfieldhigh.edu", Username = "dlee", SchoolId = schools[0].Id, RoleId = studentRole.Id, PasswordHash = password },
+                new User { FullName = "Eva Brown", Email = "eva.brown@greenfieldhigh.edu", Username = "ebrown", SchoolId = schools[0].Id, RoleId = studentRole.Id, PasswordHash = password },
+                new User { FullName = "Frank Green", Email = "frank.green@blueriverprimary.edu", Username = "fgreen", SchoolId = schools[1].Id, RoleId = studentRole.Id, PasswordHash = password },
+                new User { FullName = "Grace Kim", Email = "grace.kim@blueriverprimary.edu", Username = "gkim", SchoolId = schools[1].Id, RoleId = studentRole.Id, PasswordHash = password }
             };
             await Users.AddRangeAsync(users);
             await context.SaveChangesAsync();
