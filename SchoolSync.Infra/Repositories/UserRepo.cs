@@ -1,14 +1,11 @@
 ﻿using SchoolSync.Domain.IRepositories;
 using SchoolSync.Domain.Entities;
+using SchoolSync.Infra.Persistence;
 using Microsoft.EntityFrameworkCore;
 namespace SchoolSync.Infra.Repositories;
 
-public class UserRepo : GenericRepo<User>, IUserRepo
+public class UserRepo(DBContext context) : GenericRepo<User>(context), IUserRepo
 {
-    public UserRepo(DbContext context) : base(context)
-    {
-    }
-
     public async Task<User?> GetByUsernameAsync(string userName)
     {
         var users = await GetRangeWhereAsync(u => u.Username == userName);

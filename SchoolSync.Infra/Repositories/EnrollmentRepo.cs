@@ -1,9 +1,9 @@
 ﻿using SchoolSync.Domain.IRepositories;
 using SchoolSync.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
+using SchoolSync.Infra.Persistence;
 namespace SchoolSync.Infra.Repositories;
 
-public class EnrollmentRepo(DbContext context) : GenericRepo<Enrollment>(context), IEnrollmentRepo
+public class EnrollmentRepo(DBContext context) : GenericRepo<Enrollment>(context), IEnrollmentRepo
 {
     public async Task<IEnumerable<Enrollment>> GetByStudentAsync(int studentId)
     {

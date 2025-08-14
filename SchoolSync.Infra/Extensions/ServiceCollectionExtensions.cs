@@ -18,14 +18,16 @@ public static class ServiceCollectionExtensions
             options => options.UseSqlServer(configuration.GetConnectionString("DevDB"))
         );
 
-        // Register repos later
         // Register repositories
         services.AddScoped(typeof(IGenericRepo<>), typeof(GenericRepo<>));
+        services.AddScoped<IEnrollmentRepo, EnrollmentRepo>();
+        services.AddScoped<IOrganizationRepo, OrganizationRepo>();
         services.AddScoped<ISchoolRepo, SchoolRepo>();
         services.AddScoped<ISchoolYearRepo, SchoolYearRepo>();
         services.AddScoped<ITermRepo, TermRepo>();
         services.AddScoped<ISubjectRepo, SubjectRepo>();
         services.AddScoped<IUserRepo, UserRepo>();
+        
         // Register seeders
         services.AddScoped<IDBSeeder, DBSeeder>();
         return services;

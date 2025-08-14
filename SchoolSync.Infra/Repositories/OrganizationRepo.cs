@@ -1,10 +1,8 @@
 ﻿using SchoolSync.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
+using SchoolSync.Domain.IRepositories;
+using SchoolSync.Infra.Persistence;
 namespace SchoolSync.Infra.Repositories;
 
-public class OrganizationRepo : GenericRepo<Organization>
-{
-    public OrganizationRepo(DbContext context) : base(context)
-    {
-    }
-}
+
+// This is a wrapper for the Org Repo, because all its ops are generic
+public class OrganizationRepo(DBContext context) : GenericRepo<Organization>(context), IOrganizationRepo { }

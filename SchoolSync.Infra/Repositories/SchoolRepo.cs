@@ -1,17 +1,10 @@
 ﻿using SchoolSync.Domain.IRepositories;
 using SchoolSync.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
+using SchoolSync.Infra.Persistence;
 namespace SchoolSync.Infra.Repositories;
 
-public class SchoolRepo : GenericRepo<School>, ISchoolRepo
+public class SchoolRepo(DBContext context) : GenericRepo<School>(context), ISchoolRepo
 {
-    private readonly DbSet<School> _schools;
-
-    public SchoolRepo(DbContext context) : base(context)
-    {
-        _schools = context.Set<School>();
-    }
-
     public async Task<School?> GetByOrganizationAsync(int orgId)
     {
         var schools = await GetRangeWhereAsync(s => s.OrganizationId == orgId);

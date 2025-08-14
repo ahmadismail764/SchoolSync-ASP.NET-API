@@ -1,5 +1,21 @@
-﻿namespace SchoolSync.App.Extensions;
+﻿using Microsoft.Extensions.DependencyInjection;
+using SchoolSync.Domain.IServices;
+using SchoolSync.App.Services;
 
-public class ServiceCollectionExtensions
+namespace SchoolSync.App.Extensions;
+
+public static class ServiceCollectionExtensions
 {
+    public static IServiceCollection AddAppServices(this IServiceCollection services)
+    {
+        services.AddScoped(typeof(IGenericService<>), typeof(GenericService<>));
+        services.AddScoped<IOrganizationService, OrganizationService>();
+        services.AddScoped<ISchoolService, SchoolService>();
+        services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IEnrollmentService, EnrollmentService>();
+        services.AddScoped<ISubjectService, SubjectService>();
+        services.AddScoped<ITermService, TermService>();
+        services.AddScoped<ISchoolYearService, SchoolYearService>();
+        return services;
+    }
 }

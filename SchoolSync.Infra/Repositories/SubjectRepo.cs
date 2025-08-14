@@ -1,11 +1,10 @@
 ﻿using SchoolSync.Domain.IRepositories;
 using SchoolSync.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
+using SchoolSync.Infra.Persistence;
 namespace SchoolSync.Infra.Repositories;
 
-public class SubjectRepo: GenericRepo<Subject>, ISubjectRepo
+public class SubjectRepo(DBContext context) : GenericRepo<Subject>(context), ISubjectRepo
 {
-    public SubjectRepo(DbContext context) : base(context) { }
     public async Task<IEnumerable<Subject>> GetBySchoolAsync(int schoolId) 
     {
         return await GetRangeWhereAsync(s => s.SchoolId == schoolId);

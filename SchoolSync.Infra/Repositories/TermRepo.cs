@@ -1,17 +1,12 @@
 ﻿using SchoolSync.Domain.IRepositories;
 using SchoolSync.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
+using SchoolSync.Infra.Persistence;
 namespace SchoolSync.Infra.Repositories;
 
-public class TermRepo: GenericRepo<Term>, ITermRepo
+public class TermRepo(DBContext context) : GenericRepo<Term>(context), ITermRepo
 {
-    public TermRepo(DbContext context) : base(context)
-    {
-    }
     public async Task<IEnumerable<Term>> GetBySchoolYearAsync(int schoolYearId)
     {
         return await GetRangeWhereAsync(term => term.SchoolYearId == schoolYearId);
     }
-}
-{
 }
