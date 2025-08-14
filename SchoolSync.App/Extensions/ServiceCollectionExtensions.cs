@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using SchoolSync.Domain.IServices;
 using SchoolSync.App.Services;
-using AutoMapper;
 using System.Reflection;
 
 namespace SchoolSync.App.Extensions;

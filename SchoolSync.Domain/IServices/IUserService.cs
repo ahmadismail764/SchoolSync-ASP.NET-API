@@ -10,4 +10,5 @@ public interface IUserService : IGenericService<User>
     Task<IEnumerable<User>> GetBySchoolAsync(int schoolId);
     Task<User?> GetStudentWithDetailsAsync(int studentId);
     Task<IEnumerable<User>> GetAllStudentsWithDetailsAsync();
+    Task<bool> ValidatePasswordAsync(User user, string password);
 }

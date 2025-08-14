@@ -1,7 +1,6 @@
 using SchoolSync.Domain.Entities;
 using SchoolSync.Domain.IRepositories;
 using SchoolSync.Domain.IServices;
-
 namespace SchoolSync.App.Services;
 
 public class UserService(IUserRepo userRepo) : GenericService<User>(userRepo), IUserService
@@ -14,4 +13,11 @@ public class UserService(IUserRepo userRepo) : GenericService<User>(userRepo), I
     public async Task<IEnumerable<User>> GetBySchoolAsync(int schoolId) => await _userRepo.GetBySchoolAsync(schoolId);
     public async Task<User?> GetStudentWithDetailsAsync(int studentId) => await _userRepo.GetStudentWithDetailsAsync(studentId);
     public async Task<IEnumerable<User>> GetAllStudentsWithDetailsAsync() => await _userRepo.GetAllStudentsWithDetailsAsync();
+
+    public async Task<bool> ValidatePasswordAsync(User user, string password)
+    {
+        if (user == null || string.IsNullOrEmpty(user.PasswordHash))
+            return false;
+        return await Task.FromResult(BCrypt.Net.BCrypt.Verify(password, user.PasswordHash));
+    }
 }
