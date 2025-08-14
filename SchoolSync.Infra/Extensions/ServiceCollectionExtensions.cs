@@ -1,8 +1,10 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SchoolSync.Domain.IRepositories;
 using SchoolSync.Infra.Persistence;
+using SchoolSync.Infra.Repositories;
 using SchoolSync.Infra.Seeders;
-using Microsoft.EntityFrameworkCore;
 namespace SchoolSync.Infra.Extensions;
 
 public static class ServiceCollectionExtensions
@@ -17,7 +19,13 @@ public static class ServiceCollectionExtensions
         );
 
         // Register repos later
-
+        // Register repositories
+        services.AddScoped(typeof(IGenericRepo<>), typeof(GenericRepo<>));
+        services.AddScoped<ISchoolRepo, SchoolRepo>();
+        services.AddScoped<ISchoolYearRepo, SchoolYearRepo>();
+        services.AddScoped<ITermRepo, TermRepo>();
+        services.AddScoped<ISubjectRepo, SubjectRepo>();
+        services.AddScoped<IUserRepo, UserRepo>();
         // Register seeders
         services.AddScoped<IDBSeeder, DBSeeder>();
         return services;

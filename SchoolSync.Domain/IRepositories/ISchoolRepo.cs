@@ -3,6 +3,6 @@ namespace SchoolSync.Domain.IRepositories;
 
 public interface ISchoolRepo : IGenericRepo<School>
 {
-    Task<School?> GetByNameAsync(int id);
-    Task<School?> GetByOrganizationAsync(string name);    
+    Task<School?> GetByNameAsync(string name);
+    Task<School?> GetByOrganizationAsync(int orgId);
 }

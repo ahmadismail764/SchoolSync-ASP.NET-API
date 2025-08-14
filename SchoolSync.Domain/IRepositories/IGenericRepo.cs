@@ -1,16 +1,14 @@
-﻿using System.Runtime.InteropServices;
-
+﻿using System.Linq.Expressions;
 namespace SchoolSync.Domain.IRepositories;
 
 public interface IGenericRepo<T>
 {
-    T Get(int id);
-    IEnumerable<T> GetAll();
-    IEnumerable<T> GetRangeWhere(Func<T, bool> predicate);
-    void Create(T entity);
-    void Update(T entity);
-
-    void UpdateRangeWhere(Func<T, bool> predicate, T entity);
-    void Delete(T entity);
-    void DeleteRangeWhere(Func<T, bool> predicate);
+    Task<T?> GetAsync(int id);
+    Task<IEnumerable<T>> GetAllAsync();
+    Task<IEnumerable<T>> GetRangeWhereAsync(Expression<Func<T, bool>> predicate);
+    Task CreateAsync(T entity);
+    Task UpdateAsync(T entity);
+    Task UpdateRangeWhereAsync(Expression<Func<T, bool>> predicate, T entity);
+    Task DeleteAsync(T entity);
+    Task DeleteRangeWhereAsync(Expression<Func<T, bool>> predicate);
 }
