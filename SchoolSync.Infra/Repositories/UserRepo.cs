@@ -8,14 +8,16 @@ public class UserRepo(DBContext context) : GenericRepo<User>(context), IUserRepo
 {
     public async Task<User?> GetByUsernameAsync(string userName)
     {
-        var users = await GetRangeWhereAsync(u => u.Username == userName);
-        return users.FirstOrDefault();
+        return await context.Set<User>()
+            .Include(u => u.Role)
+            .FirstOrDefaultAsync(u => u.Username == userName);
     }
 
     public async Task<User?> GetByEmailAsync(string email)
     {
-        var users = await GetRangeWhereAsync(u => u.Email == email);
-        return users.FirstOrDefault();
+        return await context.Set<User>()
+            .Include(u => u.Role)
+            .FirstOrDefaultAsync(u => u.Email == email);
     }
     public async Task<IEnumerable<User>> GetByRoleAsync(int roleId)
     {

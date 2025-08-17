@@ -20,33 +20,33 @@ public class GenericRepo<T>(DBContext context) : IGenericRepo<T> where T : class
     public async Task<T> CreateAsync(T entity)
     {
         await dbSet.AddAsync(entity);
-        // SaveChangesAsync will be called in the service layer
         return entity;
     }
 
     public async Task UpdateAsync(T entity)
     {
-        dbSet.Update(entity);
-        // SaveChangesAsync will be called in the service layer
+        dbSet.Update(entity);        
         await Task.CompletedTask;
     }
 
-    public async Task UpdateRangeWhereAsync(Expression<Func<T, bool>> predicate, T entity)
+    public async Task UpdateRangeWhereAsync(Expression<Func<T, bool>> predicate, T updatedEntity)
     {
-        var items = await dbSet.Where(predicate).ToListAsync();
-        foreach (var item in items)
+        var entities = await dbSet.Where(predicate).ToListAsync();
+
+        var properties = typeof(T).GetProperties()
+            .Where(p => p.CanWrite && p.GetMethod != null && !p.GetMethod.IsVirtual && p.Name != "Id"); // Exclude PK and navigation
+
+        foreach (var entity in entities)
         {
-            foreach (var prop in typeof(T).GetProperties())
+            foreach (var prop in properties)
             {
-                if (prop.CanWrite)
+                var newValue = prop.GetValue(updatedEntity);
+                if (newValue != null)
                 {
-                    var value = prop.GetValue(entity);
-                    prop.SetValue(item, value);
+                    prop.SetValue(entity, newValue);
                 }
             }
-            dbSet.Update(item);
         }
-        // SaveChangesAsync will be called in the service layer
     }
 
     public async Task DeleteAsync(T entity)
@@ -56,8 +56,7 @@ public class GenericRepo<T>(DBContext context) : IGenericRepo<T> where T : class
         {
             prop.SetValue(entity, false);
             dbSet.Update(entity);
-        }
-        // SaveChangesAsync will be called in the service layer
+        }        
         await Task.CompletedTask;
     }
 
@@ -73,11 +72,7 @@ public class GenericRepo<T>(DBContext context) : IGenericRepo<T> where T : class
                 dbSet.Update(item);
             }
         }
-        // SaveChangesAsync will be called in the service layer
     }
 
-    public async Task SaveChangesAsync()
-    {
-        await context.SaveChangesAsync();
-    }
+    public async Task SaveChangesAsync() => await context.SaveChangesAsync();
 }

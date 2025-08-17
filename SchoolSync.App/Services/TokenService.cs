@@ -21,12 +21,16 @@ public class TokenService(IConfiguration config) : ITokenService
         var jwtSettings = _config.GetSection("Jwt");
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        var roleName = user.Role?.Name ?? user.RoleId.ToString();
+        if (user.Role == null)
+        {
+            throw new InvalidOperationException($"User with ID {user.Id} does not have a Role loaded. RoleId: {user.RoleId}");
+        }
+        var roleName = user.Role.Name;
         var claims = new[]
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.UniqueName, user.Username),
-            new Claim(ClaimTypes.Role, roleName)
+            new Claim("role", roleName)
         };
         var token = new JwtSecurityToken(
             issuer: jwtSettings["Issuer"],

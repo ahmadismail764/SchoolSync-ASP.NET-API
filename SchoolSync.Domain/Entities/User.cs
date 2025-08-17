@@ -18,9 +18,9 @@ public class User
 
     public Role Role { get; set; } = null!;
 
-    public List<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
+    public List<Enrollment> Enrollments { get; set; } = [];
 
-    public List<Subject> Subjects { get; set; } = new List<Subject>();
+    public List<Subject> Subjects { get; set; } = [];
   
     public StudentDetails? Details { get; set; }
 }
