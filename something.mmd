@@ -1,0 +1,124 @@
+erDiagram
+USERS {
+uuid id PK
+varchar email UK
+varchar password_hash
+varchar first_name
+varchar last_name
+varchar role "CHECK: student|teacher|admin"
+boolean is_active
+timestamptz created_at
+timestamptz updated_at
+}
+
+    COURSES {
+        uuid id PK
+        varchar title
+        text description
+        varchar subject
+        varchar level
+        boolean is_active
+        uuid created_by FK
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    CLASSES {
+        uuid id PK
+        uuid course_id FK
+        uuid teacher_id FK
+        varchar name
+        text description
+        date start_date
+        date end_date
+        integer max_students
+        boolean is_active
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    CLASS_ENROLLMENTS {
+        uuid id PK
+        uuid class_id FK
+        uuid student_id FK
+        date enrollment_date
+        varchar status "CHECK: active|completed|dropped|suspended"
+        decimal final_grade
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    LESSONS {
+        uuid id PK
+        uuid course_id FK
+        varchar title
+        text description
+        text content
+        integer lesson_order UK
+        integer estimated_duration
+        boolean is_published
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    ASSIGNMENTS {
+        uuid id PK
+        uuid lesson_id FK
+        varchar title
+        text description
+        text instructions
+        decimal max_points
+        timestamptz due_date
+        boolean is_published
+        varchar assignment_type "CHECK: homework|quiz|exam|project|practice"
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    SUBMISSIONS {
+        uuid id PK
+        uuid assignment_id FK
+        uuid student_id FK
+        text content
+        json file_attachments
+        timestamptz submitted_at
+        varchar status "CHECK: draft|submitted|graded|returned"
+        decimal points_earned
+        text feedback
+        uuid graded_by FK
+        timestamptz graded_at
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    LESSON_PROGRESS {
+        uuid id PK
+        uuid lesson_id FK
+        uuid student_id FK
+        uuid class_id FK
+        varchar status "CHECK: not_started|in_progress|completed"
+        timestamptz started_at
+        timestamptz completed_at
+        integer time_spent
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    %% Relationships
+    USERS ||--o{ COURSES : "creates (admin/teacher)"
+    USERS ||--o{ CLASSES : "teaches (teacher)"
+    USERS ||--o{ CLASS_ENROLLMENTS : "enrolls (student)"
+    USERS ||--o{ SUBMISSIONS : "submits (student)"
+    USERS ||--o{ SUBMISSIONS : "grades (teacher)"
+    USERS ||--o{ LESSON_PROGRESS : "tracks (student)"
+
+    COURSES ||--o{ CLASSES : "instantiates"
+    COURSES ||--o{ LESSONS : "contains"
+
+    CLASSES ||--o{ CLASS_ENROLLMENTS : "has enrollments"
+    CLASSES ||--o{ LESSON_PROGRESS : "tracks in"
+
+    LESSONS ||--o{ ASSIGNMENTS : "contains"
+    LESSONS ||--o{ LESSON_PROGRESS : "tracks"
+
+    ASSIGNMENTS ||--o{ SUBMISSIONS : "receives"

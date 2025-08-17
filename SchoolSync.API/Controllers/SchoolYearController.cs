@@ -9,15 +9,10 @@ namespace SchoolSync.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class SchoolYearController : ControllerBase
+public class SchoolYearController(ISchoolYearService service, IMapper mapper) : ControllerBase
 {
-    private readonly ISchoolYearService _service;
-    private readonly IMapper _mapper;
-    public SchoolYearController(ISchoolYearService service, IMapper mapper)
-    {
-        _service = service;
-        _mapper = mapper;
-    }
+    private readonly ISchoolYearService _service = service;
+    private readonly IMapper _mapper = mapper;
 
     // Anyone authenticated (including students) can view school years
     [HttpGet]

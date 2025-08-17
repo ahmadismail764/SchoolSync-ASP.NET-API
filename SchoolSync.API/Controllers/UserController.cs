@@ -1,5 +1,4 @@
 using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SchoolSync.Domain.Entities;
 using SchoolSync.Domain.IServices;
@@ -32,10 +31,6 @@ public class UserController
     [HttpGet("{id}")]
     public async Task<ActionResult<UserDto>> GetById(int id)
     {
-        var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "sub" || c.Type == "id");
-        var isAdmin = User.IsInRole("Admin");
-        if (!isAdmin && (userIdClaim == null || int.Parse(userIdClaim.Value) != id))
-            return Forbid();
         var entity = await _service.GetByIdAsync(id);
         if (entity == null) return NotFound();
         return Ok(_mapper.Map<UserDto>(entity));
@@ -51,13 +46,16 @@ public class UserController
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateUserDto dto)
     {
-        var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "sub" || c.Type == "id");
-        var isAdmin = User.IsInRole("Admin");
-        if (!isAdmin && (userIdClaim == null || int.Parse(userIdClaim.Value) != id))
-            return Forbid();
         var entity = await _service.GetByIdAsync(id);
         if (entity == null) return NotFound();
-        _mapper.Map(dto, entity);
+
+        if (dto.FullName != null) entity.FullName = dto.FullName;
+        if (dto.Email != null) entity.Email = dto.Email;
+        if (dto.Username != null) entity.Username = dto.Username;
+        if (dto.SchoolId.HasValue) entity.SchoolId = dto.SchoolId.Value;
+        if (dto.RoleId.HasValue) entity.RoleId = dto.RoleId.Value;
+        if (dto.IsActive.HasValue) entity.IsActive = dto.IsActive.Value;
+
         await _service.UpdateAsync(entity);
         return NoContent();
     }

@@ -9,17 +9,11 @@ namespace SchoolSync.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class TermController : ControllerBase
+public class TermController(ITermService service, IMapper mapper) : ControllerBase
 {
-    private readonly ITermService _service;
-    private readonly IMapper _mapper;
-    public TermController(ITermService service, IMapper mapper)
-    {
-        _service = service;
-        _mapper = mapper;
-    }
+    private readonly ITermService _service = service;
+    private readonly IMapper _mapper = mapper;
 
-    // Anyone authenticated (including students) can view terms
     [HttpGet]
     public async Task<ActionResult<IEnumerable<TermDto>>> GetAll()
     {

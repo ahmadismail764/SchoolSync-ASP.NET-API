@@ -57,13 +57,9 @@ public class SubjectController(ISubjectService service, IEnrollmentService enrol
         return NoContent();
     }
 
-    [HttpGet("my-enrolled")]
-    public async Task<ActionResult<IEnumerable<SubjectDto>>> GetEnrolledSubjects()
+    [HttpGet("my-enrolled/{studentId}")]
+    public async Task<ActionResult<IEnumerable<SubjectDto>>> GetEnrolledSubjects(int studentId)
     {
-        var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "sub" || c.Type == "id");
-        if (userIdClaim == null)
-            return Unauthorized();
-        int studentId = int.Parse(userIdClaim.Value);
         var enrollments = await _enrollmentService.GetByStudentAsync(studentId);
         var subjects = enrollments.Select(e => e.Subject).Where(s => s != null);
         var subjectDtos = subjects.Select(s => _mapper.Map<SubjectDto>(s));
