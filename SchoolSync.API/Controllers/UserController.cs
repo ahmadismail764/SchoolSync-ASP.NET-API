@@ -3,19 +3,15 @@ using Microsoft.AspNetCore.Mvc;
 using SchoolSync.Domain.Entities;
 using SchoolSync.Domain.IServices;
 using SchoolSync.App.DTOs.User;
-using SchoolSync.App.DTOs.Enrollment;
-using SchoolSync.App.DTOs.Subject;
 
 namespace SchoolSync.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
 public class UserController
-(IUserService service, IEnrollmentService enrollmentService, ISubjectService subjectService, IMapper mapper) : ControllerBase
+(IUserService service, IMapper mapper) : ControllerBase
 {
     private readonly IUserService _service = service;
-    private readonly IEnrollmentService _enrollmentService = enrollmentService; // for students, mainly
-    private readonly ISubjectService subjectService = subjectService; // for teachers
     private readonly IMapper _mapper = mapper;
 
     [HttpPost]

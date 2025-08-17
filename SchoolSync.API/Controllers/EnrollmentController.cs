@@ -40,11 +40,18 @@ public class EnrollmentController(IEnrollmentService enrollmentService, IMapper 
     [HttpPut("{id}")]
     public virtual async Task<IActionResult> Update(int id, [FromBody] UpdateEnrollmentDto dto)
     {
-        var entity = await _enrollmentService.GetByIdAsync(id);
-        if (entity == null) return NotFound();
-        _mapper.Map(dto, entity);
-        await _enrollmentService.UpdateAsync(entity);
-        return NoContent();
+    var entity = await _enrollmentService.GetByIdAsync(id);
+    if (entity == null) return NotFound();
+
+    if (dto.StudentId.HasValue) entity.StudentId = dto.StudentId.Value;
+    if (dto.SubjectId.HasValue) entity.SubjectId = dto.SubjectId.Value;
+    if (dto.TermId.HasValue) entity.TermId = dto.TermId.Value;
+    if (dto.EnrollmentDate.HasValue) entity.EnrollmentDate = dto.EnrollmentDate.Value;
+    if (dto.Grade.HasValue) entity.Grade = dto.Grade.Value;
+    if (dto.IsActive.HasValue) entity.IsActive = dto.IsActive.Value;
+
+    await _enrollmentService.UpdateAsync(entity);
+    return NoContent();
     }
 
     [HttpDelete("{id}")]

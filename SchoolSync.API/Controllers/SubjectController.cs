@@ -41,11 +41,18 @@ public class SubjectController(ISubjectService service, IEnrollmentService enrol
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateSubjectDto dto)
     {
-        var entity = await _service.GetByIdAsync(id);
-        if (entity == null) return NotFound();
-        _mapper.Map(dto, entity);
-        await _service.UpdateAsync(entity);
-        return NoContent();
+    var entity = await _service.GetByIdAsync(id);
+    if (entity == null) return NotFound();
+
+    if (dto.Name != null) entity.Name = dto.Name;
+    if (dto.Code != null) entity.Code = dto.Code;
+    if (dto.Credits.HasValue) entity.Credits = dto.Credits.Value;
+    if (dto.SchoolId.HasValue) entity.SchoolId = dto.SchoolId.Value;
+    if (dto.TeacherId.HasValue) entity.TeacherId = dto.TeacherId.Value;
+    if (dto.IsActive.HasValue) entity.IsActive = dto.IsActive.Value;
+
+    await _service.UpdateAsync(entity);
+    return NoContent();
     }
 
     [HttpDelete("{id}")]

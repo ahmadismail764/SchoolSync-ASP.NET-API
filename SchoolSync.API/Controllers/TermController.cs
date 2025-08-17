@@ -41,11 +41,17 @@ public class TermController(ITermService service, IMapper mapper) : ControllerBa
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateTermDto dto)
     {
-        var entity = await _service.GetByIdAsync(id);
-        if (entity == null) return NotFound();
-        _mapper.Map(dto, entity);
-        await _service.UpdateAsync(entity);
-        return NoContent();
+    var entity = await _service.GetByIdAsync(id);
+    if (entity == null) return NotFound();
+
+    if (dto.Name != null) entity.Name = dto.Name;
+    if (dto.StartDate.HasValue) entity.StartDate = dto.StartDate.Value;
+    if (dto.EndDate.HasValue) entity.EndDate = dto.EndDate.Value;
+    if (dto.SchoolYearId.HasValue) entity.SchoolYearId = dto.SchoolYearId.Value;
+    if (dto.IsActive.HasValue) entity.IsActive = dto.IsActive.Value;
+
+    await _service.UpdateAsync(entity);
+    return NoContent();
     }
 
     [HttpDelete("{id}")]

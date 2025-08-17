@@ -40,11 +40,15 @@ public class OrganizationController(IOrganizationService service, IMapper mapper
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateOrganizationDto dto)
     {
-        var entity = await _service.GetByIdAsync(id);
-        if (entity == null) return NotFound();
-        _mapper.Map(dto, entity);
-        await _service.UpdateAsync(entity);
-        return NoContent();
+    var entity = await _service.GetByIdAsync(id);
+    if (entity == null) return NotFound();
+
+    if (dto.Name != null) entity.Name = dto.Name;
+    if (dto.Address != null) entity.Address = dto.Address;
+    if (dto.IsActive.HasValue) entity.IsActive = dto.IsActive.Value;
+
+    await _service.UpdateAsync(entity);
+    return NoContent();
     }
 
     [HttpDelete("{id}")]
