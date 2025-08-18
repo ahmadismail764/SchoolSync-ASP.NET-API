@@ -30,6 +30,7 @@ public class TermController(ITermService service, IMapper mapper) : ControllerBa
     }
 
 
+    [Authorize(Roles = "Teacher")]
     [HttpPost]
     public async Task<ActionResult<TermDto>> Create([FromBody] CreateTermDto dto)
     {
@@ -38,6 +39,7 @@ public class TermController(ITermService service, IMapper mapper) : ControllerBa
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, _mapper.Map<TermDto>(created));
     }
 
+    [Authorize(Roles = "Teacher")]
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateTermDto dto)
     {
@@ -54,6 +56,7 @@ public class TermController(ITermService service, IMapper mapper) : ControllerBa
     return NoContent();
     }
 
+    [Authorize(Roles = "Teacher")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {

@@ -30,6 +30,7 @@ public class SchoolController(ISchoolService service, IMapper mapper) : Controll
         return Ok(_mapper.Map<SchoolDto>(entity));
     }
 
+    [Authorize(Roles = "Teacher")]
     [HttpPost]
     public async Task<ActionResult<SchoolDto>> Create([FromBody] CreateSchoolDto dto)
     {
@@ -38,6 +39,7 @@ public class SchoolController(ISchoolService service, IMapper mapper) : Controll
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, _mapper.Map<SchoolDto>(created));
     }
 
+    [Authorize(Roles = "Teacher")]
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateSchoolDto dto)
     {
@@ -53,6 +55,7 @@ public class SchoolController(ISchoolService service, IMapper mapper) : Controll
     return NoContent();
     }
 
+    [Authorize(Roles = "Teacher")]
     [HttpPut("range")]
     public async Task<IActionResult> UpdateRange([FromBody] UpdateSchoolDto dto, [FromQuery] string? nameContains = null)
     {

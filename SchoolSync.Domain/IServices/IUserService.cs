@@ -11,4 +11,6 @@ public interface IUserService : IGenericService<User>
     Task<User?> GetStudentWithDetailsAsync(int studentId);
     Task<IEnumerable<User>> GetAllStudentsWithDetailsAsync();
     Task<bool> ValidatePasswordAsync(User user, string password);
+
+    Task<User?> AuthenticateAsync(string username, string password);
 }

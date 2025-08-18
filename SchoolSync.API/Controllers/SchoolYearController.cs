@@ -30,6 +30,7 @@ public class SchoolYearController(ISchoolYearService service, IMapper mapper) : 
         return Ok(_mapper.Map<SchoolYearDto>(entity));
     }
 
+    [Authorize(Roles = "Teacher")]
     [HttpPost]
     public async Task<ActionResult<SchoolYearDto>> Create([FromBody] CreateSchoolYearDto dto)
     {
@@ -38,6 +39,7 @@ public class SchoolYearController(ISchoolYearService service, IMapper mapper) : 
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, _mapper.Map<SchoolYearDto>(created));
     }
 
+    [Authorize(Roles = "Teacher")]
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateSchoolYearDto dto)
     {
@@ -53,6 +55,7 @@ public class SchoolYearController(ISchoolYearService service, IMapper mapper) : 
     return NoContent();
     }
 
+    [Authorize(Roles = "Teacher")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {

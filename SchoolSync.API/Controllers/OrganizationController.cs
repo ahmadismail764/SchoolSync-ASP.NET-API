@@ -29,6 +29,7 @@ public class OrganizationController(IOrganizationService service, IMapper mapper
         return Ok(_mapper.Map<OrganizationDto>(entity));
     }
 
+    [Authorize(Roles = "Teacher")]
     [HttpPost]
     public async Task<ActionResult<OrganizationDto>> Create([FromBody] CreateOrganizationDto dto)
     {
@@ -37,6 +38,7 @@ public class OrganizationController(IOrganizationService service, IMapper mapper
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, _mapper.Map<OrganizationDto>(created));
     }
 
+    [Authorize(Roles = "Teacher")]
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateOrganizationDto dto)
     {
@@ -51,6 +53,7 @@ public class OrganizationController(IOrganizationService service, IMapper mapper
     return NoContent();
     }
 
+    [Authorize(Roles = "Teacher")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {

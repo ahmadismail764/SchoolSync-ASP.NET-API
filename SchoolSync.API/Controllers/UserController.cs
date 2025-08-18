@@ -1,5 +1,7 @@
+
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using SchoolSync.Domain.Entities;
 using SchoolSync.Domain.IServices;
 using SchoolSync.App.DTOs.User;
@@ -24,14 +26,33 @@ public class UserController
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, _mapper.Map<UserDto>(created));
     }
 
+    [Authorize(Roles = "Teacher")]
     [HttpGet("{id}")]
     public async Task<ActionResult<UserDto>> GetById(int id)
     {
+        // Debug: Check and return the user's role claim
+        var roleClaim = User.Claims.FirstOrDefault(c => c.Type == "role")?.Value;
+        var allClaims = User.Claims.Select(c => new { c.Type, c.Value }).ToList();
+
+        // Optionally log claims to console (for local debugging)
+        Console.WriteLine($"Role claim: {roleClaim}");
+        foreach (var claim in allClaims)
+        {
+            Console.WriteLine($"{claim.Type}: {claim.Value}");
+        }
+
         var entity = await _service.GetByIdAsync(id);
         if (entity == null) return NotFound();
-        return Ok(_mapper.Map<UserDto>(entity));
+
+        // Return the user and the role claim for debugging
+        return Ok(new {
+            User = _mapper.Map<UserDto>(entity),
+            RoleClaim = roleClaim,
+            AllClaims = allClaims
+        });
     }
 
+    [Authorize(Roles = "Teacher")]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<UserDto>>> GetAll()
     {
@@ -39,6 +60,7 @@ public class UserController
         return Ok(_mapper.Map<IEnumerable<UserDto>>(entities));
     }
 
+    [Authorize(Roles = "Teacher")]
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateUserDto dto)
     {
@@ -56,6 +78,7 @@ public class UserController
         return NoContent();
     }
 
+    [Authorize(Roles = "Teacher")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {

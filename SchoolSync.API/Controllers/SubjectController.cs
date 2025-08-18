@@ -30,6 +30,7 @@ public class SubjectController(ISubjectService service, IEnrollmentService enrol
         return Ok(_mapper.Map<SubjectDto>(entity));
     }
 
+    [Authorize(Roles = "Teacher")]
     [HttpPost]
     public async Task<ActionResult<SubjectDto>> Create([FromBody] CreateSubjectDto dto)
     {
@@ -38,6 +39,7 @@ public class SubjectController(ISubjectService service, IEnrollmentService enrol
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, _mapper.Map<SubjectDto>(created));
     }
 
+    [Authorize(Roles = "Teacher")]
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateSubjectDto dto)
     {
@@ -55,6 +57,7 @@ public class SubjectController(ISubjectService service, IEnrollmentService enrol
     return NoContent();
     }
 
+    [Authorize(Roles = "Teacher")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {

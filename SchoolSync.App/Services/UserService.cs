@@ -13,19 +13,25 @@ public class UserService(IUserRepo userRepo) : GenericService<User>(userRepo), I
     public async Task<IEnumerable<User>> GetBySchoolAsync(int schoolId) => await _userRepo.GetBySchoolAsync(schoolId);
     public async Task<User?> GetStudentWithDetailsAsync(int studentId) => await _userRepo.GetStudentWithDetailsAsync(studentId);
     public async Task<IEnumerable<User>> GetAllStudentsWithDetailsAsync() => await _userRepo.GetAllStudentsWithDetailsAsync();
-
     public async Task<bool> ValidatePasswordAsync(User user, string password)
     {
         if (user == null || string.IsNullOrEmpty(user.PasswordHash))
             return false;
         return await Task.FromResult(BCrypt.Net.BCrypt.Verify(password, user.PasswordHash));
     }
+    public async Task<User?> AuthenticateAsync(string username, string password)
+    {
+        var user = await GetByUsernameAsync(username);
+        if (user == null)
+            return null;
+
+        var isValid = await ValidatePasswordAsync(user, password);
+        return isValid ? user : null;
+    }
     public override async Task<User> CreateAsync(User entity)
     {
         if (!string.IsNullOrEmpty(entity.PasswordHash))
-        {
             entity.PasswordHash = BCrypt.Net.BCrypt.HashPassword(entity.PasswordHash);
-        }
         return await base.CreateAsync(entity);
     }
 }
