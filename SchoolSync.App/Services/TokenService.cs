@@ -22,22 +22,15 @@ public class TokenService(IConfiguration config) : ITokenService
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        // Ensure the user's Role navigation property is loaded
-        if (user.Role == null)
-        {
-            // If not loaded, throw an exception to prevent issuing a token without a role
-            throw new InvalidOperationException($"User with ID {user.Id} does not have a Role loaded. RoleId: {user.RoleId}");
-        }
-
-        var roleName = user.Role.Name;
+        var roleIdint = user.RoleId;
+        var roleId = roleIdint.ToString();
         var claims = new[]
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.UniqueName, user.Username),
-            new Claim("role", roleName)
+            new Claim(ClaimTypes.Role, roleId) // Use ClaimTypes.Role for standard role claim
+            // new Claim("Role", Role.Name) this is not the standard
         };
-
-        // Create the JWT token with issuer, audience, claims, expiration, and signing credentials
         var token = new JwtSecurityToken(
             issuer: jwtSettings["Issuer"],
             audience: jwtSettings["Audience"],
@@ -45,9 +38,6 @@ public class TokenService(IConfiguration config) : ITokenService
             expires: DateTime.UtcNow.AddMinutes(double.Parse(jwtSettings["ExpiresInMinutes"]!)),
             signingCredentials: creds
         );
-
-        // Serialize the token to a string and return it
-        string ret = new JwtSecurityTokenHandler().WriteToken(token);
-        return ret;
+        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }

@@ -7,8 +7,11 @@ using SchoolSync.App.DTOs.Enrollment;
 
 namespace SchoolSync.API.Controllers;
 
+[Authorize(Roles = "2")]
 [ApiController]
 [Route("api/[controller]")]
+// Require authentication for all endpoints in this controller
+[Authorize]
 public class EnrollmentController(IEnrollmentService enrollmentService, IMapper mapper) : ControllerBase
 {
     private readonly IEnrollmentService _enrollmentService = enrollmentService;
@@ -29,7 +32,6 @@ public class EnrollmentController(IEnrollmentService enrollmentService, IMapper 
         return Ok(_mapper.Map<EnrollmentDto>(entity));
     }
 
-    [Authorize(Roles = "Teacher")]
     [HttpPost]
     public virtual async Task<ActionResult<EnrollmentDto>> Create([FromBody] CreateEnrollmentDto dto)
     {
@@ -38,7 +40,7 @@ public class EnrollmentController(IEnrollmentService enrollmentService, IMapper 
         return CreatedAtAction(nameof(GetById), new { id = (created as dynamic).Id }, _mapper.Map<EnrollmentDto>(created));
     }
 
-    [Authorize(Roles = "Teacher")]
+
     [HttpPut("{id}")]
     public virtual async Task<IActionResult> Update(int id, [FromBody] UpdateEnrollmentDto dto)
     {
@@ -56,7 +58,6 @@ public class EnrollmentController(IEnrollmentService enrollmentService, IMapper 
     return NoContent();
     }
 
-    [Authorize(Roles = "Teacher")]
     [HttpDelete("{id}")]
     public virtual async Task<IActionResult> Delete(int id)
     {

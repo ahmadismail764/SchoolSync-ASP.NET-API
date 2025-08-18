@@ -26,25 +26,15 @@ public class UserController
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, _mapper.Map<UserDto>(created));
     }
 
-    [Authorize(Roles = "Teacher")]
+    [Authorize(Roles = "2")]
     [HttpGet("{id}")]
     public async Task<ActionResult<UserDto>> GetById(int id)
     {
         // Debug: Check and return the user's role claim
         var roleClaim = User.Claims.FirstOrDefault(c => c.Type == "role")?.Value;
         var allClaims = User.Claims.Select(c => new { c.Type, c.Value }).ToList();
-
-        // Optionally log claims to console (for local debugging)
-        Console.WriteLine($"Role claim: {roleClaim}");
-        foreach (var claim in allClaims)
-        {
-            Console.WriteLine($"{claim.Type}: {claim.Value}");
-        }
-
         var entity = await _service.GetByIdAsync(id);
         if (entity == null) return NotFound();
-
-        // Return the user and the role claim for debugging
         return Ok(new {
             User = _mapper.Map<UserDto>(entity),
             RoleClaim = roleClaim,
@@ -52,7 +42,7 @@ public class UserController
         });
     }
 
-    [Authorize(Roles = "Teacher")]
+    [Authorize(Roles = "2")]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<UserDto>>> GetAll()
     {
@@ -60,7 +50,7 @@ public class UserController
         return Ok(_mapper.Map<IEnumerable<UserDto>>(entities));
     }
 
-    [Authorize(Roles = "Teacher")]
+    [Authorize(Roles = "2")]
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateUserDto dto)
     {
@@ -78,7 +68,7 @@ public class UserController
         return NoContent();
     }
 
-    [Authorize(Roles = "Teacher")]
+    [Authorize(Roles = "2")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {

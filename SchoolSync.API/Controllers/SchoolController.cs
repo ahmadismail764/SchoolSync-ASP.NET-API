@@ -7,9 +7,12 @@ using SchoolSync.App.DTOs.School;
 
 namespace SchoolSync.API.Controllers;
 
+[Authorize(Roles = "2")]
 [ApiController]
 [Route("api/[controller]")]
 
+// Require authentication for all endpoints in this controller
+[Authorize]
 public class SchoolController(ISchoolService service, IMapper mapper) : ControllerBase
 {
     private readonly ISchoolService _service = service;
@@ -30,7 +33,6 @@ public class SchoolController(ISchoolService service, IMapper mapper) : Controll
         return Ok(_mapper.Map<SchoolDto>(entity));
     }
 
-    [Authorize(Roles = "Teacher")]
     [HttpPost]
     public async Task<ActionResult<SchoolDto>> Create([FromBody] CreateSchoolDto dto)
     {
@@ -39,23 +41,21 @@ public class SchoolController(ISchoolService service, IMapper mapper) : Controll
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, _mapper.Map<SchoolDto>(created));
     }
 
-    [Authorize(Roles = "Teacher")]
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateSchoolDto dto)
     {
-    var entity = await _service.GetByIdAsync(id);
-    if (entity == null) return NotFound();
+        var entity = await _service.GetByIdAsync(id);
+        if (entity == null) return NotFound();
 
-    if (dto.Name != null) entity.Name = dto.Name;
-    if (dto.Address != null) entity.Address = dto.Address;
-    if (dto.OrganizationId.HasValue) entity.OrganizationId = dto.OrganizationId.Value;
-    if (dto.IsActive.HasValue) entity.IsActive = dto.IsActive.Value;
+        if (dto.Name != null) entity.Name = dto.Name;
+        if (dto.Address != null) entity.Address = dto.Address;
+        if (dto.OrganizationId.HasValue) entity.OrganizationId = dto.OrganizationId.Value;
+        if (dto.IsActive.HasValue) entity.IsActive = dto.IsActive.Value;
 
-    await _service.UpdateAsync(entity);
-    return NoContent();
+        await _service.UpdateAsync(entity);
+        return NoContent();
     }
 
-    [Authorize(Roles = "Teacher")]
     [HttpPut("range")]
     public async Task<IActionResult> UpdateRange([FromBody] UpdateSchoolDto dto, [FromQuery] string? nameContains = null)
     {

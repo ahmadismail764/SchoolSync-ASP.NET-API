@@ -7,8 +7,11 @@ using SchoolSync.App.DTOs.Organization;
 
 namespace SchoolSync.API.Controllers;
 
+[Authorize(Roles = "2")]
 [ApiController]
 [Route("api/[controller]")]
+// Require authentication for all endpoints in this controller
+[Authorize]
 public class OrganizationController(IOrganizationService service, IMapper mapper) : ControllerBase
 {
     private readonly IOrganizationService _service = service;
@@ -29,7 +32,6 @@ public class OrganizationController(IOrganizationService service, IMapper mapper
         return Ok(_mapper.Map<OrganizationDto>(entity));
     }
 
-    [Authorize(Roles = "Teacher")]
     [HttpPost]
     public async Task<ActionResult<OrganizationDto>> Create([FromBody] CreateOrganizationDto dto)
     {
@@ -38,22 +40,20 @@ public class OrganizationController(IOrganizationService service, IMapper mapper
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, _mapper.Map<OrganizationDto>(created));
     }
 
-    [Authorize(Roles = "Teacher")]
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateOrganizationDto dto)
     {
-    var entity = await _service.GetByIdAsync(id);
-    if (entity == null) return NotFound();
+        var entity = await _service.GetByIdAsync(id);
+        if (entity == null) return NotFound();
 
-    if (dto.Name != null) entity.Name = dto.Name;
-    if (dto.Address != null) entity.Address = dto.Address;
-    if (dto.IsActive.HasValue) entity.IsActive = dto.IsActive.Value;
+        if (dto.Name != null) entity.Name = dto.Name;
+        if (dto.Address != null) entity.Address = dto.Address;
+        if (dto.IsActive.HasValue) entity.IsActive = dto.IsActive.Value;
 
-    await _service.UpdateAsync(entity);
-    return NoContent();
+        await _service.UpdateAsync(entity);
+        return NoContent();
     }
 
-    [Authorize(Roles = "Teacher")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
@@ -86,9 +86,7 @@ public class OrganizationController(IOrganizationService service, IMapper mapper
             ? entities
             : entities.Where(o => o.Name.Contains(nameContains, StringComparison.OrdinalIgnoreCase));
         foreach (var entity in filtered)
-        {
             await _service.DeleteAsync(entity.Id);
-        }
         return NoContent();
     }
 }

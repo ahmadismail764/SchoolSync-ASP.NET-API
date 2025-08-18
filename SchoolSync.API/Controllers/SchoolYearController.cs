@@ -7,8 +7,11 @@ using SchoolSync.App.DTOs.SchoolYear;
 
 namespace SchoolSync.API.Controllers;
 
+[Authorize(Roles = "2")]
 [ApiController]
 [Route("api/[controller]")]
+// Require authentication for all endpoints in this controller
+[Authorize]
 public class SchoolYearController(ISchoolYearService service, IMapper mapper) : ControllerBase
 {
     private readonly ISchoolYearService _service = service;
@@ -30,7 +33,6 @@ public class SchoolYearController(ISchoolYearService service, IMapper mapper) : 
         return Ok(_mapper.Map<SchoolYearDto>(entity));
     }
 
-    [Authorize(Roles = "Teacher")]
     [HttpPost]
     public async Task<ActionResult<SchoolYearDto>> Create([FromBody] CreateSchoolYearDto dto)
     {
@@ -39,23 +41,21 @@ public class SchoolYearController(ISchoolYearService service, IMapper mapper) : 
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, _mapper.Map<SchoolYearDto>(created));
     }
 
-    [Authorize(Roles = "Teacher")]
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateSchoolYearDto dto)
     {
-    var entity = await _service.GetByIdAsync(id);
-    if (entity == null) return NotFound();
+        var entity = await _service.GetByIdAsync(id);
+        if (entity == null) return NotFound();
 
-    if (dto.StartDate.HasValue) entity.StartDate = dto.StartDate.Value;
-    if (dto.EndDate.HasValue) entity.EndDate = dto.EndDate.Value;
-    if (dto.SchoolId.HasValue) entity.SchoolId = dto.SchoolId.Value;
-    if (dto.IsActive.HasValue) entity.IsActive = dto.IsActive.Value;
+        if (dto.StartDate.HasValue) entity.StartDate = dto.StartDate.Value;
+        if (dto.EndDate.HasValue) entity.EndDate = dto.EndDate.Value;
+        if (dto.SchoolId.HasValue) entity.SchoolId = dto.SchoolId.Value;
+        if (dto.IsActive.HasValue) entity.IsActive = dto.IsActive.Value;
 
-    await _service.UpdateAsync(entity);
-    return NoContent();
+        await _service.UpdateAsync(entity);
+        return NoContent();
     }
 
-    [Authorize(Roles = "Teacher")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {

@@ -40,7 +40,6 @@ public class UserRepo(DBContext context) : GenericRepo<User>(context), IUserRepo
     public async Task<IEnumerable<User>> GetAllStudentsWithDetailsAsync()
     {
         return await context.Set<User>()
-            .Include(u => u.Role)
             .Include(u => u.Enrollments).ThenInclude(e => e.Subject)
             .Include(u => u.Subjects)
             .Include(u => u.Details)
