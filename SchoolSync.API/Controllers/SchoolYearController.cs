@@ -11,13 +11,11 @@ namespace SchoolSync.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 // Require authentication for all endpoints in this controller
-[Authorize]
 public class SchoolYearController(ISchoolYearService service, IMapper mapper) : ControllerBase
 {
     private readonly ISchoolYearService _service = service;
     private readonly IMapper _mapper = mapper;
 
-    // Anyone authenticated (including students) can view school years
     [HttpGet]
     public async Task<ActionResult<IEnumerable<SchoolYearDto>>> GetAll()
     {
@@ -64,4 +62,29 @@ public class SchoolYearController(ISchoolYearService service, IMapper mapper) : 
         await _service.DeleteAsync(id);
         return NoContent();
     }
+    // [HttpPut("range")]
+    // public async Task<IActionResult> UpdateRange([FromBody] UpdateSchoolYearDto dto, [FromQuery] string? nameContains = null)
+    // {
+    //     var entity = new SchoolYear();        
+    //     _mapper.Map(dto, entity);
+    //     await _service.UpdateRangeWhereAsync(
+    //         schlyear => string.IsNullOrEmpty(nameContains) || schlyear.Name.Contains(nameContains, StringComparison.OrdinalIgnoreCase),
+    //         entity
+    //     );
+    //     return NoContent();
+    // }
+
+    // [HttpDelete("range")]
+    // public async Task<IActionResult> DeleteRange([FromQuery] string? nameContains = null)
+    // {
+    //     try
+    //     {
+    //         await _service.DeleteRangeWhereAsync(org => string.IsNullOrEmpty(nameContains) || org.Name.Contains(nameContains, StringComparison.OrdinalIgnoreCase));
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         return StatusCode(500, $"An error occurred: {ex.Message}");
+    //     }
+    //     return NoContent();
+    // }
 }

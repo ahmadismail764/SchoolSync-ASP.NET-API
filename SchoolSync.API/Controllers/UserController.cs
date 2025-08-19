@@ -35,7 +35,8 @@ public class UserController
         var allClaims = User.Claims.Select(c => new { c.Type, c.Value }).ToList();
         var entity = await _service.GetByIdAsync(id);
         if (entity == null) return NotFound();
-        return Ok(new {
+        return Ok(new
+        {
             User = _mapper.Map<UserDto>(entity),
             RoleClaim = roleClaim,
             AllClaims = allClaims
@@ -49,6 +50,14 @@ public class UserController
         var entities = await _service.GetAllAsync();
         return Ok(_mapper.Map<IEnumerable<UserDto>>(entities));
     }
+    [HttpGet("range")]
+    public async Task<ActionResult<IEnumerable<UserDto>>> GetRange([FromQuery] string? nameContains = null)
+    {
+        var entities = await _service.GetRangeWhereAsync(
+            user => string.IsNullOrEmpty(nameContains) || user.FullName.Contains(nameContains, StringComparison.OrdinalIgnoreCase)
+        );
+        return Ok(_mapper.Map<IEnumerable<UserDto>>(entities));
+    }
 
     [Authorize(Roles = "2")]
     [HttpPut("{id}")]
@@ -56,15 +65,9 @@ public class UserController
     {
         var entity = await _service.GetByIdAsync(id);
         if (entity == null) return NotFound();
-
-        if (dto.FullName != null) entity.FullName = dto.FullName;
-        if (dto.Email != null) entity.Email = dto.Email;
-        if (dto.Username != null) entity.Username = dto.Username;
-        if (dto.SchoolId.HasValue) entity.SchoolId = dto.SchoolId.Value;
-        if (dto.RoleId.HasValue) entity.RoleId = dto.RoleId.Value;
-        if (dto.IsActive.HasValue) entity.IsActive = dto.IsActive.Value;
-
+        _mapper.Map(dto, entity);
         await _service.UpdateAsync(entity);
+        await _service.SaveChangesAsync();
         return NoContent();
     }
 
@@ -75,6 +78,32 @@ public class UserController
         var entity = await _service.GetByIdAsync(id);
         if (entity == null) return NotFound();
         await _service.DeleteAsync(id);
+        return NoContent();
+    }
+
+    [HttpPut("range")]
+    public async Task<IActionResult> UpdateRange([FromBody] UpdateUserDto dto, [FromQuery] string? nameContains = null)
+    {
+        var entity = new User();
+        _mapper.Map(dto, entity);
+        await _service.UpdateRangeWhereAsync(
+            user => string.IsNullOrEmpty(nameContains) || user.FullName.Contains(nameContains, StringComparison.OrdinalIgnoreCase),
+            entity
+        );
+        return NoContent();
+    }
+
+    [HttpDelete("range")]
+    public async Task<IActionResult> DeleteRange([FromQuery] string? nameContains = null)
+    {
+        try
+        {
+            await _service.DeleteRangeWhereAsync(user => string.IsNullOrEmpty(nameContains) || user.FullName.Contains(nameContains, StringComparison.OrdinalIgnoreCase));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"An error occurred: {ex.Message}");
+        }
         return NoContent();
     }
 }

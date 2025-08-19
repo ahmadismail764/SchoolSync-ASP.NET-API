@@ -14,8 +14,8 @@ public class GenericRepo<T>(DBContext context) : IGenericRepo<T> where T : class
 
     public async Task<IEnumerable<T>> GetAllAsync() => await dbSet.ToListAsync();
 
-    public async Task<IEnumerable<T>> GetRangeWhereAsync(Expression<Func<T, bool>> predicate) =>
-        await dbSet.Where(predicate).ToListAsync();
+    public async Task<IEnumerable<T>> GetRangeWhereAsync(Expression<Func<T, bool>> predicate)
+        => await dbSet.Where(predicate).ToListAsync();
 
     public async Task<T> CreateAsync(T entity)
     {
@@ -42,9 +42,7 @@ public class GenericRepo<T>(DBContext context) : IGenericRepo<T> where T : class
             {
                 var newValue = prop.GetValue(updatedEntity);
                 if (newValue != null)
-                {
                     prop.SetValue(entity, newValue);
-                }
             }
         }
     }

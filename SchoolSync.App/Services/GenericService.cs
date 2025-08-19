@@ -1,6 +1,6 @@
 using SchoolSync.Domain.IServices;
 using SchoolSync.Domain.IRepositories;
-
+using System.Linq.Expressions;
 namespace SchoolSync.App.Services;
 
 public class GenericService<T>(IGenericRepo<T> repo) : IGenericService<T> where T : class
@@ -28,5 +28,27 @@ public class GenericService<T>(IGenericRepo<T> repo) : IGenericService<T> where 
             await _repo.DeleteAsync(entity);
             await _repo.SaveChangesAsync();
         }
+    }
+
+    public async Task<IEnumerable<T>> GetRangeWhereAsync(Expression<Func<T, bool>> predicate)
+        => await _repo.GetRangeWhereAsync(predicate);
+
+    public async Task<IEnumerable<T>> UpdateRangeWhereAsync(Expression<Func<T, bool>> predicate, T entity)
+    {
+        await _repo.UpdateRangeWhereAsync(predicate, entity);
+        await _repo.SaveChangesAsync();
+        return await _repo.GetRangeWhereAsync(predicate);
+    }
+
+    public async Task<IEnumerable<T>> DeleteRangeWhereAsync(Expression<Func<T, bool>> predicate)
+    {
+        await _repo.DeleteRangeWhereAsync(predicate);
+        await _repo.SaveChangesAsync();
+        return await Task.FromResult(Enumerable.Empty<T>());
+    }
+
+    public async Task SaveChangesAsync()
+    {
+        await _repo.SaveChangesAsync();
     }
 }

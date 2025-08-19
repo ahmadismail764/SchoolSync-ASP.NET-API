@@ -32,6 +32,15 @@ public class OrganizationController(IOrganizationService service, IMapper mapper
         return Ok(_mapper.Map<OrganizationDto>(entity));
     }
 
+    [HttpGet("range")]
+    public async Task<ActionResult<IEnumerable<OrganizationDto>>> GetRange([FromQuery] string? nameContains = null)
+    {
+        var entities = await _service.GetRangeWhereAsync(
+            org => string.IsNullOrEmpty(nameContains) || org.Name.Contains(nameContains, StringComparison.OrdinalIgnoreCase)
+        );
+        return Ok(_mapper.Map<IEnumerable<OrganizationDto>>(entities));
+    }
+
     [HttpPost]
     public async Task<ActionResult<OrganizationDto>> Create([FromBody] CreateOrganizationDto dto)
     {
@@ -45,13 +54,16 @@ public class OrganizationController(IOrganizationService service, IMapper mapper
     {
         var entity = await _service.GetByIdAsync(id);
         if (entity == null) return NotFound();
-
-        if (dto.Name != null) entity.Name = dto.Name;
-        if (dto.Address != null) entity.Address = dto.Address;
-        if (dto.IsActive.HasValue) entity.IsActive = dto.IsActive.Value;
-
+        _mapper.Map(dto, entity);
         await _service.UpdateAsync(entity);
-        return NoContent();
+        try
+        {
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"An error occurred: {ex.Message}");
+        }
     }
 
     [HttpDelete("{id}")]
@@ -63,30 +75,29 @@ public class OrganizationController(IOrganizationService service, IMapper mapper
         return NoContent();
     }
 
-    [HttpPut("update-range")]
+    [HttpPut("range")]
     public async Task<IActionResult> UpdateRange([FromBody] UpdateOrganizationDto dto, [FromQuery] string? nameContains = null)
     {
-        var entities = await _service.GetAllAsync();
-        var filtered = string.IsNullOrEmpty(nameContains)
-            ? entities
-            : entities.Where(o => o.Name.Contains(nameContains, StringComparison.OrdinalIgnoreCase));
-        foreach (var entity in filtered)
-        {
-            _mapper.Map(dto, entity);
-            await _service.UpdateAsync(entity);
-        }
+        var entity = new Organization();
+        _mapper.Map(dto, entity);
+        await _service.UpdateRangeWhereAsync(
+            org => string.IsNullOrEmpty(nameContains) || org.Name.Contains(nameContains, StringComparison.OrdinalIgnoreCase),
+            entity
+        );
         return NoContent();
     }
 
-    [HttpDelete("delete-range")]
+    [HttpDelete("range")]
     public async Task<IActionResult> DeleteRange([FromQuery] string? nameContains = null)
     {
-        var entities = await _service.GetAllAsync();
-        var filtered = string.IsNullOrEmpty(nameContains)
-            ? entities
-            : entities.Where(o => o.Name.Contains(nameContains, StringComparison.OrdinalIgnoreCase));
-        foreach (var entity in filtered)
-            await _service.DeleteAsync(entity.Id);
+        try
+        {
+            await _service.DeleteRangeWhereAsync(org => string.IsNullOrEmpty(nameContains) || org.Name.Contains(nameContains, StringComparison.OrdinalIgnoreCase));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"An error occurred: {ex.Message}");
+        }
         return NoContent();
     }
 }

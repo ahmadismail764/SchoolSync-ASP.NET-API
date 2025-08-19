@@ -10,8 +10,6 @@ namespace SchoolSync.API.Controllers;
 [Authorize(Roles = "2")]
 [ApiController]
 [Route("api/[controller]")]
-// Require authentication for all endpoints in this controller
-[Authorize]
 public class SubjectController(ISubjectService service, IEnrollmentService enrollmentService, IMapper mapper) : ControllerBase
 {
     private readonly ISubjectService _service = service;
@@ -32,6 +30,15 @@ public class SubjectController(ISubjectService service, IEnrollmentService enrol
         if (entity == null) return NotFound();
         return Ok(_mapper.Map<SubjectDto>(entity));
     }
+    [HttpGet("range")]
+    public async Task<ActionResult<IEnumerable<SubjectDto>>> GetRange([FromQuery] string? nameContains = null)
+    {
+        var entities = await _service.GetRangeWhereAsync(
+            sub => string.IsNullOrEmpty(nameContains) || sub.Name.Contains(nameContains, StringComparison.OrdinalIgnoreCase)
+        );
+        return Ok(_mapper.Map<IEnumerable<SubjectDto>>(entities));
+    }
+
 
     [HttpPost]
     public async Task<ActionResult<SubjectDto>> Create([FromBody] CreateSubjectDto dto)
@@ -44,18 +51,18 @@ public class SubjectController(ISubjectService service, IEnrollmentService enrol
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateSubjectDto dto)
     {
-    var entity = await _service.GetByIdAsync(id);
-    if (entity == null) return NotFound();
-
-    if (dto.Name != null) entity.Name = dto.Name;
-    if (dto.Code != null) entity.Code = dto.Code;
-    if (dto.Credits.HasValue) entity.Credits = dto.Credits.Value;
-    if (dto.SchoolId.HasValue) entity.SchoolId = dto.SchoolId.Value;
-    if (dto.TeacherId.HasValue) entity.TeacherId = dto.TeacherId.Value;
-    if (dto.IsActive.HasValue) entity.IsActive = dto.IsActive.Value;
-
-    await _service.UpdateAsync(entity);
-    return NoContent();
+        var entity = await _service.GetByIdAsync(id);
+        if (entity == null) return NotFound();
+        _mapper.Map(dto, entity);
+        await _service.UpdateAsync(entity);
+        try
+        {
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"An error occurred: {ex.Message}");
+        }
     }
 
     [HttpDelete("{id}")]
@@ -74,5 +81,30 @@ public class SubjectController(ISubjectService service, IEnrollmentService enrol
         var subjects = enrollments.Select(e => e.Subject).Where(s => s != null);
         var subjectDtos = subjects.Select(s => _mapper.Map<SubjectDto>(s));
         return Ok(subjectDtos);
+    }
+    [HttpPut("range")]
+    public async Task<IActionResult> UpdateRange([FromBody] UpdateSubjectDto dto, [FromQuery] string? nameContains = null)
+    {
+        var entity = new Subject();
+        _mapper.Map(dto, entity);
+        await _service.UpdateRangeWhereAsync(
+            sub => string.IsNullOrEmpty(nameContains) || sub.Name.Contains(nameContains, StringComparison.OrdinalIgnoreCase),
+            entity
+        );
+        return NoContent();
+    }
+
+    [HttpDelete("range")]
+    public async Task<IActionResult> DeleteRange([FromQuery] string? nameContains = null)
+    {
+        try
+        {
+            await _service.DeleteRangeWhereAsync(sub => string.IsNullOrEmpty(nameContains) || sub.Name.Contains(nameContains, StringComparison.OrdinalIgnoreCase));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"An error occurred: {ex.Message}");
+        }
+        return NoContent();
     }
 }
