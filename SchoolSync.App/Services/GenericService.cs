@@ -11,9 +11,16 @@ public class GenericService<T>(IGenericRepo<T> repo) : IGenericService<T> where 
     public async Task<IEnumerable<T>> GetAllAsync() => await _repo.GetAllAsync();
     public virtual async Task<T> CreateAsync(T entity)
     {
+        await ValidateAsync(entity);
         var created = await _repo.CreateAsync(entity);
         await _repo.SaveChangesAsync();
         return created;
+    }
+
+    public virtual Task ValidateAsync(T entity)
+    {
+        // Default implementation does nothing, can be overridden in derived classes
+        return Task.CompletedTask;
     }
     public async Task UpdateAsync(T entity)
     {

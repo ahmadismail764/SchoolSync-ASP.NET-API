@@ -9,4 +9,14 @@ public class SchoolService(ISchoolRepo schoolRepo) : GenericService<School>(scho
     public async Task<School?> GetByOrganizationAsync(int orgId) => await _schoolRepo.GetByOrganizationAsync(orgId);
     public async Task<School?> GetByNameAsync(string name) => await _schoolRepo.GetByNameAsync(name);
 
+    public override Task ValidateAsync(School entity)
+    {
+        if (string.IsNullOrWhiteSpace(entity.Name))
+            throw new ArgumentException("School name is required.");
+        if (string.IsNullOrWhiteSpace(entity.Email) || !entity.Email.Contains("@"))
+            throw new ArgumentException("Valid school email is required.");
+        if (entity.OrganizationId <= 0)
+            throw new ArgumentException("OrganizationId must be set.");
+        return Task.CompletedTask;
+    }
 }

@@ -33,9 +33,20 @@ public class EnrollmentController(IEnrollmentService enrollmentService, IMapper 
     [HttpPost]
     public virtual async Task<ActionResult<EnrollmentDto>> Create([FromBody] CreateEnrollmentDto dto)
     {
-        var entity = _mapper.Map<Enrollment>(dto);
-        var created = await _service.CreateAsync(entity);
-        return CreatedAtAction(nameof(GetById), new { id = (created as dynamic).Id }, _mapper.Map<EnrollmentDto>(created));
+        try
+        {
+            var entity = _mapper.Map<Enrollment>(dto);
+            var created = await _service.CreateAsync(entity);
+            return CreatedAtAction(nameof(GetById), new { id = (created as dynamic).Id }, _mapper.Map<EnrollmentDto>(created));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"An error occurred: {ex.Message}");
+        }
     }
 
 
@@ -44,16 +55,25 @@ public class EnrollmentController(IEnrollmentService enrollmentService, IMapper 
     {
         var entity = await _service.GetByIdAsync(id);
         if (entity == null) return NotFound();
-
         if (dto.StudentId.HasValue) entity.StudentId = dto.StudentId.Value;
         if (dto.SubjectId.HasValue) entity.SubjectId = dto.SubjectId.Value;
         if (dto.TermId.HasValue) entity.TermId = dto.TermId.Value;
         if (dto.EnrollmentDate.HasValue) entity.EnrollmentDate = dto.EnrollmentDate.Value;
         if (dto.Grade.HasValue) entity.Grade = dto.Grade.Value;
         if (dto.IsActive.HasValue) entity.IsActive = dto.IsActive.Value;
-
-        await _service.UpdateAsync(entity);
-        return NoContent();
+        try
+        {
+            await _service.UpdateAsync(entity);
+            return Ok(_mapper.Map<EnrollmentDto>(entity));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"An error occurred: {ex.Message}");
+        }
     }
     // [HttpPut("range")]
     // public async Task<IActionResult> UpdateRange([FromBody] UpdateEnrollmentDto dto, [FromQuery] string? nameContains = null)
@@ -89,4 +109,4 @@ public class EnrollmentController(IEnrollmentService enrollmentService, IMapper 
         await _service.DeleteAsync(id);
         return NoContent();
     }
- }
+}

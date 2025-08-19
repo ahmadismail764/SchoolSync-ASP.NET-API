@@ -34,9 +34,20 @@ public class SchoolYearController(ISchoolYearService service, IMapper mapper) : 
     [HttpPost]
     public async Task<ActionResult<SchoolYearDto>> Create([FromBody] CreateSchoolYearDto dto)
     {
-        var entity = _mapper.Map<SchoolYear>(dto);
-        var created = await _service.CreateAsync(entity);
-        return CreatedAtAction(nameof(GetById), new { id = created.Id }, _mapper.Map<SchoolYearDto>(created));
+        try
+        {
+            var entity = _mapper.Map<SchoolYear>(dto);
+            var created = await _service.CreateAsync(entity);
+            return CreatedAtAction(nameof(GetById), new { id = created.Id }, _mapper.Map<SchoolYearDto>(created));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"An error occurred: {ex.Message}");
+        }
     }
 
     [HttpPut("{id}")]
@@ -44,14 +55,23 @@ public class SchoolYearController(ISchoolYearService service, IMapper mapper) : 
     {
         var entity = await _service.GetByIdAsync(id);
         if (entity == null) return NotFound();
-
         if (dto.StartDate.HasValue) entity.StartDate = dto.StartDate.Value;
         if (dto.EndDate.HasValue) entity.EndDate = dto.EndDate.Value;
         if (dto.SchoolId.HasValue) entity.SchoolId = dto.SchoolId.Value;
         if (dto.IsActive.HasValue) entity.IsActive = dto.IsActive.Value;
-
-        await _service.UpdateAsync(entity);
-        return NoContent();
+        try
+        {
+            await _service.UpdateAsync(entity);
+            return Ok(_mapper.Map<SchoolYearDto>(entity));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"An error occurred: {ex.Message}");
+        }
     }
 
     [HttpDelete("{id}")]

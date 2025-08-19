@@ -7,4 +7,12 @@ namespace SchoolSync.App.Services;
 public class OrganizationService(IOrganizationRepo organizationRepo)
     : GenericService<Organization>(organizationRepo), IOrganizationService
 {
+    public override Task ValidateAsync(Organization entity)
+    {
+        if (string.IsNullOrWhiteSpace(entity.Name))
+            throw new ArgumentException("Organization name is required.");
+        if (string.IsNullOrWhiteSpace(entity.Email) || !entity.Email.Contains("@"))
+            throw new ArgumentException("Valid organization email is required.");
+        return Task.CompletedTask;
+    }
 }

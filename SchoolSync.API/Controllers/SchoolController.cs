@@ -45,9 +45,20 @@ public class SchoolController(ISchoolService service, IMapper mapper) : Controll
     [HttpPost]
     public async Task<ActionResult<SchoolDto>> Create([FromBody] CreateSchoolDto dto)
     {
-        var entity = _mapper.Map<School>(dto);
-        var created = await _service.CreateAsync(entity);
-        return CreatedAtAction(nameof(GetById), new { id = created.Id }, _mapper.Map<SchoolDto>(created));
+        try
+        {
+            var entity = _mapper.Map<School>(dto);
+            var created = await _service.CreateAsync(entity);
+            return CreatedAtAction(nameof(GetById), new { id = created.Id }, _mapper.Map<SchoolDto>(created));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"An error occurred: {ex.Message}");
+        }
     }
 
     [HttpPut("{id}")]
@@ -56,10 +67,14 @@ public class SchoolController(ISchoolService service, IMapper mapper) : Controll
         var entity = await _service.GetByIdAsync(id);
         if (entity == null) return NotFound();
         _mapper.Map(dto, entity);
-        await _service.UpdateAsync(entity);
         try
         {
-            return NoContent();
+            await _service.UpdateAsync(entity);
+            return Ok(_mapper.Map<SchoolDto>(entity));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
         }
         catch (Exception ex)
         {
@@ -68,15 +83,26 @@ public class SchoolController(ISchoolService service, IMapper mapper) : Controll
     }
 
     [HttpPut("range")]
-    public async Task<IActionResult> UpdateRange([FromBody] UpdateSchoolDto dto, [FromQuery] string? nameContains = null)
+    public async Task<ActionResult<IEnumerable<SchoolDto>>> UpdateRange([FromBody] UpdateSchoolDto dto, [FromQuery] string? nameContains = null)
     {
-        var entity = new School();        
+        var entity = new School();
         _mapper.Map(dto, entity);
-        await _service.UpdateRangeWhereAsync(
-            school => string.IsNullOrEmpty(nameContains) || school.Name.Contains(nameContains, StringComparison.OrdinalIgnoreCase),
-            entity
-        );
-        return NoContent();
+        try
+        {
+            var updated = await _service.UpdateRangeWhereAsync(
+                school => string.IsNullOrEmpty(nameContains) || school.Name.Contains(nameContains, StringComparison.OrdinalIgnoreCase),
+                entity
+            );
+            return Ok(_mapper.Map<IEnumerable<SchoolDto>>(updated));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"An error occurred: {ex.Message}");
+        }
     }
 
 
@@ -91,16 +117,16 @@ public class SchoolController(ISchoolService service, IMapper mapper) : Controll
 
 
     [HttpDelete("range")]
-    public async Task<IActionResult> DeleteRange([FromQuery] string? nameContains = null)
+    public async Task<ActionResult<IEnumerable<SchoolDto>>> DeleteRange([FromQuery] string? nameContains = null)
     {
         try
         {
-            await _service.DeleteRangeWhereAsync(school => string.IsNullOrEmpty(nameContains) || school.Name.Contains(nameContains, StringComparison.OrdinalIgnoreCase));
+            var deleted = await _service.DeleteRangeWhereAsync(school => string.IsNullOrEmpty(nameContains) || school.Name.Contains(nameContains, StringComparison.OrdinalIgnoreCase));
+            return Ok(_mapper.Map<IEnumerable<SchoolDto>>(deleted));
         }
         catch (Exception ex)
         {
             return StatusCode(500, $"An error occurred: {ex.Message}");
         }
-        return NoContent();
     }
 }

@@ -23,9 +23,10 @@ public class GenericRepo<T>(DBContext context) : IGenericRepo<T> where T : class
         return entity;
     }
 
+
     public async Task UpdateAsync(T entity)
     {
-        dbSet.Update(entity);        
+        dbSet.Update(entity);
         await Task.CompletedTask;
     }
 

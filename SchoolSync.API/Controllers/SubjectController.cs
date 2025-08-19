@@ -43,9 +43,20 @@ public class SubjectController(ISubjectService service, IEnrollmentService enrol
     [HttpPost]
     public async Task<ActionResult<SubjectDto>> Create([FromBody] CreateSubjectDto dto)
     {
-        var entity = _mapper.Map<Subject>(dto);
-        var created = await _service.CreateAsync(entity);
-        return CreatedAtAction(nameof(GetById), new { id = created.Id }, _mapper.Map<SubjectDto>(created));
+        try
+        {
+            var entity = _mapper.Map<Subject>(dto);
+            var created = await _service.CreateAsync(entity);
+            return CreatedAtAction(nameof(GetById), new { id = created.Id }, _mapper.Map<SubjectDto>(created));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"An error occurred: {ex.Message}");
+        }
     }
 
     [HttpPut("{id}")]
@@ -54,10 +65,14 @@ public class SubjectController(ISubjectService service, IEnrollmentService enrol
         var entity = await _service.GetByIdAsync(id);
         if (entity == null) return NotFound();
         _mapper.Map(dto, entity);
-        await _service.UpdateAsync(entity);
         try
         {
-            return NoContent();
+            await _service.UpdateAsync(entity);
+            return Ok(_mapper.Map<SubjectDto>(entity));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
         }
         catch (Exception ex)
         {
@@ -83,28 +98,39 @@ public class SubjectController(ISubjectService service, IEnrollmentService enrol
         return Ok(subjectDtos);
     }
     [HttpPut("range")]
-    public async Task<IActionResult> UpdateRange([FromBody] UpdateSubjectDto dto, [FromQuery] string? nameContains = null)
+    public async Task<ActionResult<IEnumerable<SubjectDto>>> UpdateRange([FromBody] UpdateSubjectDto dto, [FromQuery] string? nameContains = null)
     {
         var entity = new Subject();
         _mapper.Map(dto, entity);
-        await _service.UpdateRangeWhereAsync(
-            sub => string.IsNullOrEmpty(nameContains) || sub.Name.Contains(nameContains, StringComparison.OrdinalIgnoreCase),
-            entity
-        );
-        return NoContent();
-    }
-
-    [HttpDelete("range")]
-    public async Task<IActionResult> DeleteRange([FromQuery] string? nameContains = null)
-    {
         try
         {
-            await _service.DeleteRangeWhereAsync(sub => string.IsNullOrEmpty(nameContains) || sub.Name.Contains(nameContains, StringComparison.OrdinalIgnoreCase));
+            var updated = await _service.UpdateRangeWhereAsync(
+                sub => string.IsNullOrEmpty(nameContains) || sub.Name.Contains(nameContains, StringComparison.OrdinalIgnoreCase),
+                entity
+            );
+            return Ok(_mapper.Map<IEnumerable<SubjectDto>>(updated));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
         }
         catch (Exception ex)
         {
             return StatusCode(500, $"An error occurred: {ex.Message}");
         }
-        return NoContent();
+    }
+
+    [HttpDelete("range")]
+    public async Task<ActionResult<IEnumerable<SubjectDto>>> DeleteRange([FromQuery] string? nameContains = null)
+    {
+        try
+        {
+            var deleted = await _service.DeleteRangeWhereAsync(sub => string.IsNullOrEmpty(nameContains) || sub.Name.Contains(nameContains, StringComparison.OrdinalIgnoreCase));
+            return Ok(_mapper.Map<IEnumerable<SubjectDto>>(deleted));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"An error occurred: {ex.Message}");
+        }
     }
 }

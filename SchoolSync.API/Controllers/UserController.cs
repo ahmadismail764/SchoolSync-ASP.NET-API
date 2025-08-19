@@ -19,11 +19,22 @@ public class UserController
     [HttpPost]
     public async Task<ActionResult<UserDto>> Register([FromBody] CreateUserDto dto)
     {
-        var entity = _mapper.Map<User>(dto);
-        if (!string.IsNullOrEmpty(dto.Password))
-            entity.PasswordHash = dto.Password;
-        var created = await _service.CreateAsync(entity);
-        return CreatedAtAction(nameof(GetById), new { id = created.Id }, _mapper.Map<UserDto>(created));
+        try
+        {
+            var entity = _mapper.Map<User>(dto);
+            if (!string.IsNullOrEmpty(dto.Password))
+                entity.PasswordHash = dto.Password;
+            var created = await _service.CreateAsync(entity);
+            return CreatedAtAction(nameof(GetById), new { id = created.Id }, _mapper.Map<UserDto>(created));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"An error occurred: {ex.Message}");
+        }
     }
 
     [Authorize(Roles = "2")]
@@ -58,17 +69,62 @@ public class UserController
         );
         return Ok(_mapper.Map<IEnumerable<UserDto>>(entities));
     }
-
-    [Authorize(Roles = "2")]
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateUserDto dto)
     {
         var entity = await _service.GetByIdAsync(id);
         if (entity == null) return NotFound();
         _mapper.Map(dto, entity);
-        await _service.UpdateAsync(entity);
-        await _service.SaveChangesAsync();
-        return NoContent();
+        try
+        {
+            await _service.UpdateAsync(entity);
+            return Ok(_mapper.Map<UserDto>(entity));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"An error occurred: {ex.Message}");
+        }
+    }
+
+    [HttpPut("range")]
+    public async Task<ActionResult<IEnumerable<UserDto>>> UpdateRange([FromBody] UpdateUserDto dto, [FromQuery] string? nameContains = null)
+    {
+        var entity = new User();
+        _mapper.Map(dto, entity);
+        try
+        {
+            var updated = await _service.UpdateRangeWhereAsync(
+                user => string.IsNullOrEmpty(nameContains) || user.FullName.Contains(nameContains, StringComparison.OrdinalIgnoreCase),
+                entity
+            );
+            return Ok(_mapper.Map<IEnumerable<UserDto>>(updated));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"An error occurred: {ex.Message}");
+        }
+    }
+
+    [HttpDelete("range")]
+    public async Task<ActionResult<IEnumerable<UserDto>>> DeleteRange([FromQuery] string? nameContains = null)
+    {
+        try
+        {
+            var deleted = await _service.DeleteRangeWhereAsync(user => string.IsNullOrEmpty(nameContains) || user.FullName.Contains(nameContains, StringComparison.OrdinalIgnoreCase));
+            return Ok(_mapper.Map<IEnumerable<UserDto>>(deleted));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"An error occurred: {ex.Message}");
+        }
     }
 
     [Authorize(Roles = "2")]
@@ -81,29 +137,4 @@ public class UserController
         return NoContent();
     }
 
-    [HttpPut("range")]
-    public async Task<IActionResult> UpdateRange([FromBody] UpdateUserDto dto, [FromQuery] string? nameContains = null)
-    {
-        var entity = new User();
-        _mapper.Map(dto, entity);
-        await _service.UpdateRangeWhereAsync(
-            user => string.IsNullOrEmpty(nameContains) || user.FullName.Contains(nameContains, StringComparison.OrdinalIgnoreCase),
-            entity
-        );
-        return NoContent();
-    }
-
-    [HttpDelete("range")]
-    public async Task<IActionResult> DeleteRange([FromQuery] string? nameContains = null)
-    {
-        try
-        {
-            await _service.DeleteRangeWhereAsync(user => string.IsNullOrEmpty(nameContains) || user.FullName.Contains(nameContains, StringComparison.OrdinalIgnoreCase));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"An error occurred: {ex.Message}");
-        }
-        return NoContent();
-    }
 }
