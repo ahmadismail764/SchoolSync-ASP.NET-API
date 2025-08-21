@@ -25,6 +25,7 @@ public class GenericService<T>(IGenericRepo<T> repo) : IGenericService<T> where 
     public async Task UpdateAsync(T entity)
     {
         await _repo.UpdateAsync(entity);
+        await ValidateAsync(entity);
         await _repo.SaveChangesAsync();
     }
     public async Task DeleteAsync(int id)

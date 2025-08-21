@@ -36,7 +36,7 @@ public class UserService(IUserRepo userRepo) : GenericService<User>(userRepo), I
         return await base.CreateAsync(entity);
     }
 
-    public override Task ValidateAsync(User entity)
+    public override async Task ValidateAsync(User entity)
     {
         if (string.IsNullOrWhiteSpace(entity.FullName))
             throw new ArgumentException("Full name is required.");
@@ -48,6 +48,13 @@ public class UserService(IUserRepo userRepo) : GenericService<User>(userRepo), I
             throw new ArgumentException("RoleId must be set.");
         if (entity.SchoolId <= 0)
             throw new ArgumentException("SchoolId must be set.");
-        return Task.CompletedTask;
+
+        var existingByUsername = await _userRepo.GetByUsernameAsync(entity.Username);
+        if (existingByUsername != null)
+            throw new ArgumentException("Username already exists.");
+
+        var existingByEmail = await _userRepo.GetByEmailAsync(entity.Email);
+        if (existingByEmail != null && existingByEmail.Id != entity.Id)
+            throw new ArgumentException("Email already exists.");
     }
 }

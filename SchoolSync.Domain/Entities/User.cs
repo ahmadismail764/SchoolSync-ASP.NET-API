@@ -21,6 +21,6 @@ public class User
     public List<Enrollment> Enrollments { get; set; } = [];
 
     public List<Subject> Subjects { get; set; } = [];
-  
+
     public StudentDetails? Details { get; set; }
 }

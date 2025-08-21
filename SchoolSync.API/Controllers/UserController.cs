@@ -23,8 +23,13 @@ public class UserController
         try
         {
             var entity = _mapper.Map<User>(dto);
-            if (!string.IsNullOrEmpty(dto.Password))
+            {
+                // Validate password: must be alphanumeric and not null/empty
+                if (string.IsNullOrWhiteSpace(dto.Password) || !dto.Password.All(char.IsLetterOrDigit))
+                    return BadRequest("Password must be alphanumeric.");
                 entity.PasswordHash = dto.Password;
+            }
+            entity.PasswordHash = dto.Password;
             var created = await _service.CreateAsync(entity);
             return CreatedAtAction(nameof(GetById), new { id = created.Id }, _mapper.Map<UserDto>(created));
         }

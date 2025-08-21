@@ -13,7 +13,7 @@ public class SchoolService(ISchoolRepo schoolRepo) : GenericService<School>(scho
     {
         if (string.IsNullOrWhiteSpace(entity.Name))
             throw new ArgumentException("School name is required.");
-        if (string.IsNullOrWhiteSpace(entity.Email) || !entity.Email.Contains("@"))
+        if (string.IsNullOrWhiteSpace(entity.Email) || !entity.Email.Contains('@'))
             throw new ArgumentException("Valid school email is required.");
         if (entity.OrganizationId <= 0)
             throw new ArgumentException("OrganizationId must be set.");

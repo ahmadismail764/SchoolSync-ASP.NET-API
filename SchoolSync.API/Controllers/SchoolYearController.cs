@@ -54,7 +54,6 @@ public class SchoolYearController(ISchoolYearService service, IMapper mapper) : 
     {
         var entity = await _service.GetByIdAsync(id);
         if (entity == null) return NotFound();
-        // Explicit guard clause pattern for partial update
         if (dto.StartDate.HasValue) entity.StartDate = dto.StartDate.Value;
         if (dto.EndDate.HasValue) entity.EndDate = dto.EndDate.Value;
         if (dto.SchoolId.HasValue) entity.SchoolId = dto.SchoolId.Value;
