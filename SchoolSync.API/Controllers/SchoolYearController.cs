@@ -7,10 +7,9 @@ using SchoolSync.App.DTOs.SchoolYear;
 
 namespace SchoolSync.API.Controllers;
 
-[Authorize(Roles = "2")]
 [ApiController]
 [Route("api/[controller]")]
-// Require authentication for all endpoints in this controller
+[Authorize(Roles = "2")]
 public class SchoolYearController(ISchoolYearService service, IMapper mapper) : ControllerBase
 {
     private readonly ISchoolYearService _service = service;
@@ -55,10 +54,7 @@ public class SchoolYearController(ISchoolYearService service, IMapper mapper) : 
     {
         var entity = await _service.GetByIdAsync(id);
         if (entity == null) return NotFound();
-        if (dto.StartDate.HasValue) entity.StartDate = dto.StartDate.Value;
-        if (dto.EndDate.HasValue) entity.EndDate = dto.EndDate.Value;
-        if (dto.SchoolId.HasValue) entity.SchoolId = dto.SchoolId.Value;
-        if (dto.IsActive.HasValue) entity.IsActive = dto.IsActive.Value;
+        _mapper.Map(dto, entity);
         try
         {
             await _service.UpdateAsync(entity);

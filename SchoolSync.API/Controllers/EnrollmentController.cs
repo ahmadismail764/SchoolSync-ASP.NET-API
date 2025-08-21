@@ -7,9 +7,9 @@ using SchoolSync.App.DTOs.Enrollment;
 
 namespace SchoolSync.API.Controllers;
 
-[Authorize(Roles = "2")]
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Roles = "2")]
 public class EnrollmentController(IEnrollmentService enrollmentService, IMapper mapper) : ControllerBase
 {
     private readonly IEnrollmentService _service = enrollmentService;

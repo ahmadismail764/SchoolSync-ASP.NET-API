@@ -7,11 +7,9 @@ using SchoolSync.App.DTOs.Organization;
 
 namespace SchoolSync.API.Controllers;
 
-[Authorize(Roles = "2")]
 [ApiController]
 [Route("api/[controller]")]
-// Require authentication for all endpoints in this controller
-[Authorize]
+[Authorize(Roles = "2")]
 public class OrganizationController(IOrganizationService service, IMapper mapper) : ControllerBase
 {
     private readonly IOrganizationService _service = service;

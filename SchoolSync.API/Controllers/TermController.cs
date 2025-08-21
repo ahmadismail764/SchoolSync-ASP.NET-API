@@ -7,9 +7,9 @@ using SchoolSync.App.DTOs.Term;
 
 namespace SchoolSync.API.Controllers;
 
-[Authorize(Roles = "2")]
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Roles = "2")]
 public class TermController(ITermService service, IMapper mapper) : ControllerBase
 {
     private readonly ITermService _service = service;
