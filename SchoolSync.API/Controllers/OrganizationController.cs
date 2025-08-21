@@ -63,7 +63,10 @@ public class OrganizationController(IOrganizationService service, IMapper mapper
     {
         var entity = await _service.GetByIdAsync(id);
         if (entity == null) return NotFound();
-        _mapper.Map(dto, entity);
+        // Explicit guard clause pattern for partial update
+        if (dto.Name != null) entity.Name = dto.Name;
+        if (dto.Address != null) entity.Address = dto.Address;
+        if (dto.IsActive.HasValue) entity.IsActive = dto.IsActive.Value;
         try
         {
             await _service.UpdateAsync(entity);

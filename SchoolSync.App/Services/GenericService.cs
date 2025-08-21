@@ -19,9 +19,9 @@ public class GenericService<T>(IGenericRepo<T> repo) : IGenericService<T> where 
 
     public virtual Task ValidateAsync(T entity)
     {
-        // Default implementation does nothing, can be overridden in derived classes
         return Task.CompletedTask;
     }
+
     public async Task UpdateAsync(T entity)
     {
         await _repo.UpdateAsync(entity);

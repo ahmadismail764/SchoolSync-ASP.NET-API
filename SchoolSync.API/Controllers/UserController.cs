@@ -41,17 +41,10 @@ public class UserController
     [HttpGet("{id}")]
     public async Task<ActionResult<UserDto>> GetById(int id)
     {
-        // Debug: Check and return the user's role claim
-        var roleClaim = User.Claims.FirstOrDefault(c => c.Type == "role")?.Value;
-        var allClaims = User.Claims.Select(c => new { c.Type, c.Value }).ToList();
         var entity = await _service.GetByIdAsync(id);
         if (entity == null) return NotFound();
-        return Ok(new
-        {
-            User = _mapper.Map<UserDto>(entity),
-            RoleClaim = roleClaim,
-            AllClaims = allClaims
-        });
+
+        return Ok(_mapper.Map<UserDto>(entity));
     }
 
     [HttpGet]
@@ -75,11 +68,18 @@ public class UserController
     {
         var entity = await _service.GetByIdAsync(id);
         if (entity == null) return NotFound();
-        _mapper.Map(dto, entity);
+        // Only update fields that are not null in the DTO
+        if (dto.FullName != null) entity.FullName = dto.FullName;
+        if (dto.Email != null) entity.Email = dto.Email;
+        if (dto.Username != null) entity.Username = dto.Username;
+        if (dto.SchoolId.HasValue) entity.SchoolId = dto.SchoolId.Value;
+        if (dto.RoleId.HasValue) entity.RoleId = dto.RoleId.Value;
+        if (dto.IsActive.HasValue) entity.IsActive = dto.IsActive.Value;
         try
         {
             await _service.UpdateAsync(entity);
-            return Ok(_mapper.Map<UserDto>(entity));
+            var pass = _mapper.Map<UserDto>(entity);
+            return Ok(pass);
         }
         catch (ArgumentException ex)
         {

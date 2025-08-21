@@ -63,7 +63,11 @@ public class SchoolController(ISchoolService service, IMapper mapper) : Controll
     {
         var entity = await _service.GetByIdAsync(id);
         if (entity == null) return NotFound();
-        _mapper.Map(dto, entity);
+        // Explicit guard clause pattern for partial update
+        if (dto.Name != null) entity.Name = dto.Name;
+        if (dto.Address != null) entity.Address = dto.Address;
+        if (dto.OrganizationId.HasValue) entity.OrganizationId = dto.OrganizationId.Value;
+        if (dto.IsActive.HasValue) entity.IsActive = dto.IsActive.Value;
         try
         {
             await _service.UpdateAsync(entity);

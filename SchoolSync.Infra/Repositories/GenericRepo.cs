@@ -55,7 +55,7 @@ public class GenericRepo<T>(DBContext context) : IGenericRepo<T> where T : class
         {
             prop.SetValue(entity, false);
             dbSet.Update(entity);
-        }        
+        }
         await Task.CompletedTask;
     }
 

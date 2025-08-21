@@ -64,7 +64,13 @@ public class SubjectController(ISubjectService service, IEnrollmentService enrol
     {
         var entity = await _service.GetByIdAsync(id);
         if (entity == null) return NotFound();
-        _mapper.Map(dto, entity);
+        // Explicit guard clause pattern for partial update
+        if (dto.Name != null) entity.Name = dto.Name;
+        if (dto.Code != null) entity.Code = dto.Code;
+        if (dto.Credits.HasValue) entity.Credits = dto.Credits.Value;
+        if (dto.SchoolId.HasValue) entity.SchoolId = dto.SchoolId.Value;
+        if (dto.TeacherId.HasValue) entity.TeacherId = dto.TeacherId.Value;
+        if (dto.IsActive.HasValue) entity.IsActive = dto.IsActive.Value;
         try
         {
             await _service.UpdateAsync(entity);
