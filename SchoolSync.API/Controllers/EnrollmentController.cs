@@ -75,31 +75,6 @@ public class EnrollmentController(IEnrollmentService enrollmentService, IMapper 
             return StatusCode(500, $"An error occurred: {ex.Message}");
         }
     }
-    // [HttpPut("range")]
-    // public async Task<IActionResult> UpdateRange([FromBody] UpdateEnrollmentDto dto, [FromQuery] string? nameContains = null)
-    // {
-    //     var enrollment = new Organization();        
-    //     _mapper.Map(dto, enrollment);
-    //     await _service.UpdateRangeWhereAsync(
-    //         org => string.IsNullOrEmpty(nameContains) || enrollment.Name.Contains(nameContains, StringComparison.OrdinalIgnoreCase),
-    //         enrollment
-    //     );
-    //     return NoContent();
-    // }
-
-    // [HttpDelete("range")]
-    // public async Task<IActionResult> DeleteRange([FromQuery] string? nameContains = null)
-    // {
-    //     try
-    //     {
-    //         await _service.DeleteRangeWhereAsync(org => string.IsNullOrEmpty(nameContains) || org.Name.Contains(nameContains, StringComparison.OrdinalIgnoreCase));
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         return StatusCode(500, $"An error occurred: {ex.Message}");
-    //     }
-    //     return NoContent();
-    // }
 
     [HttpDelete("{id}")]
     public virtual async Task<IActionResult> Delete(int id)
