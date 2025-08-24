@@ -8,9 +8,6 @@ public class CreateOrganizationDto
     [Required, StringLength(100)]
     public string Name { get; set; } = null!;
 
-    /// <summary>Description of the organization.</summary>
-    [StringLength(500)]
-    public string Description { get; set; } = null!;
 
     /// <summary>Organization address.</summary>
     [Required, StringLength(200)]

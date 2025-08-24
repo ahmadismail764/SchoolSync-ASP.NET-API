@@ -8,4 +8,5 @@ public class TermDto
     public DateTime EndDate { get; set; }
     public int SchoolYearId { get; set; }
     public bool IsActive { get; set; }
+    public SchoolSync.App.DTOs.SchoolYear.SchoolYearDto? SchoolYear { get; set; }
 }

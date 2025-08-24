@@ -9,4 +9,6 @@ public class SubjectDto
     public int SchoolId { get; set; }
     public int TeacherId { get; set; }
     public bool IsActive { get; set; }
+    public SchoolSync.App.DTOs.School.SchoolDto? School { get; set; }
+    public SchoolSync.App.DTOs.User.UserDto? Teacher { get; set; }
 }
