@@ -10,7 +10,7 @@ namespace SchoolSync.Infra.Extensions;
 public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddInfrastructureServices(
-        this IServiceCollection services, 
+        this IServiceCollection services,
         IConfiguration configuration)
     {
         // Add DbContext
@@ -27,7 +27,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITermRepo, TermRepo>();
         services.AddScoped<ISubjectRepo, SubjectRepo>();
         services.AddScoped<IUserRepo, UserRepo>();
-        
+
         // Register seeders
         services.AddScoped<IDBSeeder, DBSeeder>();
         return services;

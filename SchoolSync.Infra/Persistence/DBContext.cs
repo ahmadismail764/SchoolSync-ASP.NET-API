@@ -1,11 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
-
 using SchoolSync.Domain.Entities;
 namespace SchoolSync.Infra.Persistence;
 
-public class DBContext : DbContext
+public class DBContext(DbContextOptions<DBContext> options) : DbContext(options)
 {
-    public DBContext(DbContextOptions<DBContext> options) : base(options) { }
     public DbSet<Organization> Organizations { get; set; }
     public DbSet<School> Schools { get; set; }
     public DbSet<User> Users { get; set; }
@@ -18,99 +16,88 @@ public class DBContext : DbContext
     public DbSet<Role> Roles { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // Enrollment relations start here /////////////////////////////
-        // 1. Enrollment has foreign key to student
+        // Organization - School (1:M)
+        modelBuilder.Entity<School>()
+            .HasOne(s => s.Organization)
+            .WithMany(o => o.Schools)
+            .HasForeignKey(s => s.OrganizationId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // School - User (1:M)
+        modelBuilder.Entity<User>()
+            .HasOne(u => u.School)
+            .WithMany(s => s.PeopleHere)
+            .HasForeignKey(u => u.SchoolId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // School - Subject (1:M)
+        modelBuilder.Entity<Subject>()
+            .HasOne(sub => sub.School)
+            .WithMany(sch => sch.Subjects)
+            .HasForeignKey(sub => sub.SchoolId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // School - SchoolYear (1:M)
+        modelBuilder.Entity<SchoolYear>()
+            .HasOne(sy => sy.School)
+            .WithMany(s => s.SchoolYears)
+            .HasForeignKey(sy => sy.SchoolId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // SchoolYear - Term (1:M)
+        modelBuilder.Entity<Term>()
+            .HasOne(t => t.SchoolYear)
+            .WithMany(sy => sy.Terms)
+            .HasForeignKey(t => t.SchoolYearId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // User - Role (M:1)
+        modelBuilder.Entity<User>()
+            .HasOne(u => u.Role)
+            .WithMany(r => r.Users)
+            .HasForeignKey(u => u.RoleId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // User - Subject (M:M, as Teacher)
+        modelBuilder.Entity<Subject>()
+            .HasOne(sub => sub.Teacher)
+            .WithMany(u => u.Subjects)
+            .HasForeignKey(sub => sub.TeacherId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // User - Enrollment (1:M, as Student)
         modelBuilder.Entity<Enrollment>()
             .HasOne(e => e.Student)
-            .WithMany(s => s.Enrollments)
+            .WithMany(u => u.Enrollments)
             .HasForeignKey(e => e.StudentId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // 2. Enrollment has foreign key to subject
+        // Enrollment - Subject (M:1)
         modelBuilder.Entity<Enrollment>()
             .HasOne(e => e.Subject)
             .WithMany(s => s.Enrollments)
             .HasForeignKey(e => e.SubjectId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // 3. Enrollment has foreign key to term
+        // Enrollment - Term (M:1)
         modelBuilder.Entity<Enrollment>()
             .HasOne(e => e.Term)
-            .WithMany(s => s.Enrollments)
+            .WithMany(t => t.Enrollments)
             .HasForeignKey(e => e.TermId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // 4. Enrollment has composite pkey
+        // Enrollment composite index (StudentId, SubjectId, TermId)
         modelBuilder.Entity<Enrollment>()
             .HasIndex(e => new { e.StudentId, e.SubjectId, e.TermId })
             .IsUnique();
-        // Enrollment relations end here /////////////////////////////
 
-        // Subject relations start here /////////////////////////////
-        // 1. Subject has foreign key to school
-        modelBuilder.Entity<Subject>()
-            .HasOne(sub => sub.School)
-            .WithMany(sc => sc.Subjects)
-            .HasForeignKey(sub => sub.SchoolId)
-            .OnDelete(DeleteBehavior.Restrict);
-        //2. Subject has foreign key to teacher
-        modelBuilder.Entity<Subject>()
-            .HasOne(sub => sub.Teacher)
-            .WithMany(t => t.Subjects)
-            .HasForeignKey(sub => sub.TeacherId)
-            .OnDelete(DeleteBehavior.Restrict);
-        // 3. Subject points to a TEACHER -- Applied on Application Layer, biz logic
-        // Subject relations end here /////////////////////////////
-
-        // School relations start here /////////////////////////////
-        // 1. School has foreign key to Organizatoin
-        modelBuilder.Entity<School>()
-                    .HasOne(s => s.Organization)
-                    .WithMany(o => o.Schools)
-                    .HasForeignKey(s => s.OrganizationId)
-                    .OnDelete(DeleteBehavior.Restrict);
-        // School relations end here ///////////////////////////////
-
-        // User relations start here /////////////////////////////
-        // 1. User has foreign key to School
-        modelBuilder.Entity<User>()
-                    .HasOne(s => s.School)
-                    .WithMany(o => o.PeopleHere)
-                    .HasForeignKey(s => s.SchoolId)
-                    .OnDelete(DeleteBehavior.Restrict);
-        // 2. User has foreign key to Role
-        modelBuilder.Entity<User>()
-                    .HasOne(s => s.Role)
-                    .WithMany(o => o.Users)
-                    .HasForeignKey(s => s.RoleId)
-                    .OnDelete(DeleteBehavior.Restrict);
-        // School relations end here ///////////////////////////////
-
-        // StudentDetails relations start here /////////////////////////////
-        // 1. StudentDetails has foreign key to User
+        // User - StudentDetails (1:1)
         modelBuilder.Entity<StudentDetails>()
-            .HasOne(s => s.Student)
-            .WithOne(o => o.Details)
-            .HasForeignKey<StudentDetails>(s => s.StudentId)
+            .HasOne(sd => sd.Student)
+            .WithOne(u => u.Details)
+            .HasForeignKey<StudentDetails>(sd => sd.StudentId)
             .OnDelete(DeleteBehavior.Restrict);
-        // StudentDetails relations end here ///////////////////////////////
 
-        // SchoolYear relations start here /////////////////////////////
-        // 1. SchoolYear has foreign key to School
-        modelBuilder.Entity<SchoolYear>()
-                    .HasOne(s => s.School)
-                    .WithMany(o => o.SchoolYears)
-                    .HasForeignKey(s => s.SchoolId)
-                    .OnDelete(DeleteBehavior.Restrict);
-        // SchoolYear relations end here /////////////////////////////
-        // Term relations start here /////////////////////////////
-        // 1. Term has foreign key to SchoolYear
-        modelBuilder.Entity<Term>()
-                    .HasOne(s => s.SchoolYear)
-                    .WithMany(o => o.Terms)
-                    .HasForeignKey(s => s.SchoolYearId)
-                    .OnDelete(DeleteBehavior.Restrict);
-        // SchoolYear relations end here /////////////////////////////
         base.OnModelCreating(modelBuilder);
     }
 }

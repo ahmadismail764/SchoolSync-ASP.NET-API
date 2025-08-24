@@ -1,7 +1,3 @@
-select
-    id,
-    username,
-    PasswordHash,
-    RoleId
-from
-    users;
+use master;
+
+drop database SchoolSync;

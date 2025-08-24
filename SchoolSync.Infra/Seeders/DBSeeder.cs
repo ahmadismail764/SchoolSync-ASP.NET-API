@@ -38,9 +38,8 @@ internal class DBSeeder(DBContext context) : IDBSeeder
         {
             var roles = new List<Role>
             {
-                new Role { Name = "Student" },
-                new Role { Name = "Teacher" },
-                new Role { Name = "Admin" }
+                new() { Name = "Student" },
+                new() { Name = "Teacher" }
             };
             await Roles.AddRangeAsync(roles);
             await context.SaveChangesAsync();
@@ -53,8 +52,8 @@ internal class DBSeeder(DBContext context) : IDBSeeder
         {
             var orgs = new List<Organization>
             {
-                new Organization { Name = "Greenfield Academy Trust", Description = "A modern education group.", Address = "101 Green St, Cityville", PhoneNumber = "+1-555-1000", Email = "info@greenfield.org" },
-                new Organization { Name = "Blue River Schools", Description = "Education for the future.", Address = "202 Blue River Rd, Townsville", PhoneNumber = "+1-555-2000", Email = "contact@blueriver.edu" }
+                new() { Name = "Greenfield Academy Trust", Address = "101 Green St, Cityville", PhoneNumber = "+1-555-1000", Email = "info@greenfield.org" },
+                new() { Name = "Blue River Schools", Address = "202 Blue River Rd, Townsville", PhoneNumber = "+1-555-2000", Email = "contact@blueriver.edu" }
             };
             await Organizations.AddRangeAsync(orgs);
             await context.SaveChangesAsync();
@@ -68,8 +67,8 @@ internal class DBSeeder(DBContext context) : IDBSeeder
             var orgs = await Organizations.ToListAsync();
             var schools = new List<School>
             {
-                new School { Name = "Greenfield High", Address = "1 School Lane", PhoneNumber = "+1-555-1100", Email = "admin@greenfieldhigh.edu", OrganizationId = orgs[0].Id },
-                new School { Name = "Blue River Primary", Address = "2 River Rd", PhoneNumber = "+1-555-2100", Email = "office@blueriverprimary.edu", OrganizationId = orgs[1].Id }
+                new() { Name = "Greenfield High", Address = "1 School Lane", PhoneNumber = "+1-555-1100", Email = "admin@greenfieldhigh.edu", OrganizationId = orgs[0].Id },
+                new() { Name = "Blue River Primary", Address = "2 River Rd", PhoneNumber = "+1-555-2100", Email = "office@blueriverprimary.edu", OrganizationId = orgs[1].Id }
             };
             await Schools.AddRangeAsync(schools);
             await context.SaveChangesAsync();
@@ -88,14 +87,14 @@ internal class DBSeeder(DBContext context) : IDBSeeder
             var users = new List<User>
             {
                 // Teachers
-                new User { FullName = "Alice Smith", Email = "alice.smith@greenfieldhigh.edu", Username = "asmith", SchoolId = schools[0].Id, RoleId = teacherRole.Id, PasswordHash = password },
-                new User { FullName = "Bob Johnson", Email = "bob.johnson@greenfieldhigh.edu", Username = "bjohnson", SchoolId = schools[0].Id, RoleId = teacherRole.Id, PasswordHash = password },
-                new User { FullName = "Carol White", Email = "carol.white@blueriverprimary.edu", Username = "cwhite", SchoolId = schools[1].Id, RoleId = teacherRole.Id, PasswordHash = password },
+                new() { FullName = "Alice Smith", Email = "alice.smith@greenfieldhigh.edu", Username = "asmith", SchoolId = schools[0].Id, RoleId = teacherRole.Id, PasswordHash = password },
+                new() { FullName = "Bob Johnson", Email = "bob.johnson@greenfieldhigh.edu", Username = "bjohnson", SchoolId = schools[0].Id, RoleId = teacherRole.Id, PasswordHash = password },
+                new() { FullName = "Carol White", Email = "carol.white@blueriverprimary.edu", Username = "cwhite", SchoolId = schools[1].Id, RoleId = teacherRole.Id, PasswordHash = password },
                 // Students
-                new User { FullName = "David Lee", Email = "david.lee@greenfieldhigh.edu", Username = "dlee", SchoolId = schools[0].Id, RoleId = studentRole.Id, PasswordHash = password },
-                new User { FullName = "Eva Brown", Email = "eva.brown@greenfieldhigh.edu", Username = "ebrown", SchoolId = schools[0].Id, RoleId = studentRole.Id, PasswordHash = password },
-                new User { FullName = "Frank Green", Email = "frank.green@blueriverprimary.edu", Username = "fgreen", SchoolId = schools[1].Id, RoleId = studentRole.Id, PasswordHash = password },
-                new User { FullName = "Grace Kim", Email = "grace.kim@blueriverprimary.edu", Username = "gkim", SchoolId = schools[1].Id, RoleId = studentRole.Id, PasswordHash = password }
+                new() { FullName = "David Lee", Email = "david.lee@greenfieldhigh.edu", Username = "dlee", SchoolId = schools[0].Id, RoleId = studentRole.Id, PasswordHash = password },
+                new() { FullName = "Eva Brown", Email = "eva.brown@greenfieldhigh.edu", Username = "ebrown", SchoolId = schools[0].Id, RoleId = studentRole.Id, PasswordHash = password },
+                new() { FullName = "Frank Green", Email = "frank.green@blueriverprimary.edu", Username = "fgreen", SchoolId = schools[1].Id, RoleId = studentRole.Id, PasswordHash = password },
+                new() { FullName = "Grace Kim", Email = "grace.kim@blueriverprimary.edu", Username = "gkim", SchoolId = schools[1].Id, RoleId = studentRole.Id, PasswordHash = password }
             };
             await Users.AddRangeAsync(users);
             await context.SaveChangesAsync();
@@ -128,9 +127,9 @@ internal class DBSeeder(DBContext context) : IDBSeeder
             var teachers = await Users.Where(u => u.Role.Name == "Teacher").ToListAsync();
             var subjects = new List<Subject>
             {
-                new Subject { Name = "Mathematics", Code = "MATH101", Credits = 3, SchoolId = schools[0].Id, TeacherId = teachers[0].Id },
-                new Subject { Name = "English", Code = "ENG101", Credits = 2, SchoolId = schools[0].Id, TeacherId = teachers[1].Id },
-                new Subject { Name = "Science", Code = "SCI101", Credits = 3, SchoolId = schools[1].Id, TeacherId = teachers[2].Id }
+                new() { Name = "Mathematics", Code = "MATH101", Credits = 3, SchoolId = schools[0].Id, TeacherId = teachers[0].Id },
+                new() { Name = "English", Code = "ENG101", Credits = 2, SchoolId = schools[0].Id, TeacherId = teachers[1].Id },
+                new() { Name = "Science", Code = "SCI101", Credits = 3, SchoolId = schools[1].Id, TeacherId = teachers[2].Id }
             };
             await Subjects.AddRangeAsync(subjects);
             await context.SaveChangesAsync();
@@ -144,8 +143,8 @@ internal class DBSeeder(DBContext context) : IDBSeeder
             var schools = await Schools.ToListAsync();
             var years = new List<SchoolYear>
             {
-                new SchoolYear { Year = 2024, StartDate = new DateTime(2024, 8, 15), EndDate = new DateTime(2025, 6, 15), SchoolId = schools[0].Id },
-                new SchoolYear { Year = 2024, StartDate = new DateTime(2024, 8, 15), EndDate = new DateTime(2025, 6, 15), SchoolId = schools[1].Id }
+                new() { Year = 2024, StartDate = new DateTime(2024, 8, 15), EndDate = new DateTime(2025, 6, 15), SchoolId = schools[0].Id },
+                new() { Year = 2024, StartDate = new DateTime(2024, 8, 15), EndDate = new DateTime(2025, 6, 15), SchoolId = schools[1].Id }
             };
             await SchoolYears.AddRangeAsync(years);
             await context.SaveChangesAsync();
@@ -159,10 +158,10 @@ internal class DBSeeder(DBContext context) : IDBSeeder
             var years = await SchoolYears.ToListAsync();
             var terms = new List<Term>
             {
-                new Term { Name = "Fall 2024", StartDate = new DateTime(2024, 8, 15), EndDate = new DateTime(2024, 12, 20), SchoolYearId = years[0].Id },
-                new Term { Name = "Spring 2025", StartDate = new DateTime(2025, 1, 15), EndDate = new DateTime(2025, 6, 15), SchoolYearId = years[0].Id },
-                new Term { Name = "Fall 2024", StartDate = new DateTime(2024, 8, 15), EndDate = new DateTime(2024, 12, 20), SchoolYearId = years[1].Id },
-                new Term { Name = "Spring 2025", StartDate = new DateTime(2025, 1, 15), EndDate = new DateTime(2025, 6, 15), SchoolYearId = years[1].Id }
+                new() { Name = "Fall 2024", StartDate = new DateTime(2024, 8, 15), EndDate = new DateTime(2024, 12, 20), SchoolYearId = years[0].Id },
+                new() { Name = "Spring 2025", StartDate = new DateTime(2025, 1, 15), EndDate = new DateTime(2025, 6, 15), SchoolYearId = years[0].Id },
+                new() { Name = "Fall 2024", StartDate = new DateTime(2024, 8, 15), EndDate = new DateTime(2024, 12, 20), SchoolYearId = years[1].Id },
+                new() { Name = "Spring 2025", StartDate = new DateTime(2025, 1, 15), EndDate = new DateTime(2025, 6, 15), SchoolYearId = years[1].Id }
             };
             await Terms.AddRangeAsync(terms);
             await context.SaveChangesAsync();
