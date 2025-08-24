@@ -1,5 +1,5 @@
 using SchoolSync.Domain.Entities;
-namespace SchoolSync.Domain.Services;
+namespace SchoolSync.Domain.IServices;
 
 public interface ITokenService
 {

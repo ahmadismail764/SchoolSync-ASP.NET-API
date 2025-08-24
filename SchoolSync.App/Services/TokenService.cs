@@ -4,9 +4,9 @@ using SchoolSync.Domain.Entities;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using SchoolSync.Domain.IServices;
 namespace SchoolSync.App.Services;
 
-// Implementation of the token service
 public class TokenService(IConfiguration config) : ITokenService
 {
     // Store configuration for accessing JWT settings
@@ -28,8 +28,7 @@ public class TokenService(IConfiguration config) : ITokenService
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.UniqueName, user.Username),
-            new Claim(ClaimTypes.Role, roleId) // Use ClaimTypes.Role for standard role claim
-            // new Claim("Role", Role.Name) this is not the standard
+            new Claim(ClaimTypes.Role, roleId)
         };
         var token = new JwtSecurityToken(
             issuer: jwtSettings["Issuer"],

@@ -5,7 +5,7 @@ namespace SchoolSync.App.Services;
 
 public class GenericService<T>(IGenericRepo<T> repo) : IGenericService<T> where T : class
 {
-    private readonly IGenericRepo<T> _repo = repo;
+    protected readonly IGenericRepo<T> _repo = repo;
 
     public async Task<T?> GetByIdAsync(int id) => await _repo.GetAsync(id);
     public async Task<IEnumerable<T>> GetAllAsync() => await _repo.GetAllAsync();
@@ -28,14 +28,10 @@ public class GenericService<T>(IGenericRepo<T> repo) : IGenericService<T> where 
         await ValidateAsync(entity);
         await _repo.SaveChangesAsync();
     }
-    public async Task DeleteAsync(int id)
+    public virtual async Task DeleteAsync(int id)
     {
-        var entity = await _repo.GetAsync(id);
-        if (entity != null)
-        {
-            await _repo.DeleteAsync(entity);
-            await _repo.SaveChangesAsync();
-        }
+        await _repo.DeleteAsync(id);
+        await _repo.SaveChangesAsync();
     }
 
     public async Task<IEnumerable<T>> GetRangeWhereAsync(Expression<Func<T, bool>> predicate)
