@@ -2,6 +2,6 @@ using SchoolSync.Domain.Entities;
 
 namespace SchoolSync.Domain.IRepositories;
 
-public interface IOrganizationRepo: IGenericRepo<Organization>
+public interface IOrganizationRepo : IGenericRepo<Organization>
 {
 }

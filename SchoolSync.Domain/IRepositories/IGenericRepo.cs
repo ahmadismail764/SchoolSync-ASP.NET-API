@@ -9,8 +9,7 @@ public interface IGenericRepo<T>
     Task<T> CreateAsync(T entity);
     Task UpdateAsync(T entity);
     Task UpdateRangeWhereAsync(Expression<Func<T, bool>> predicate, T entity);
-    Task DeleteAsync(T entity);
+    Task DeleteAsync(int id);
     Task DeleteRangeWhereAsync(Expression<Func<T, bool>> predicate);
-
     Task SaveChangesAsync();
 }

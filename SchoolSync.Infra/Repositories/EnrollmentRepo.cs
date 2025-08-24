@@ -12,7 +12,7 @@ public class EnrollmentRepo(DBContext context) : GenericRepo<Enrollment>(context
     public async Task<IEnumerable<Enrollment>> GetBySubjectAsync(int subjectId)
     {
         return await GetRangeWhereAsync(e => e.SubjectId == subjectId);
-        
+
     }
     public async Task<IEnumerable<Enrollment>> GetByTermAsync(int termId)
     {
@@ -21,6 +21,6 @@ public class EnrollmentRepo(DBContext context) : GenericRepo<Enrollment>(context
     public async Task<Enrollment?> GetByCompositeKeyAsync(int studentId, int subjectId, int termId)
     {
         return await GetRangeWhereAsync(e => e.StudentId == studentId && e.SubjectId == subjectId && e.TermId == termId)
-            .ContinueWith(task => task.Result.FirstOrDefault());  
+            .ContinueWith(task => task.Result.FirstOrDefault());
     }
 }

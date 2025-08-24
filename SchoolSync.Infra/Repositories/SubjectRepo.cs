@@ -5,7 +5,7 @@ namespace SchoolSync.Infra.Repositories;
 
 public class SubjectRepo(DBContext context) : GenericRepo<Subject>(context), ISubjectRepo
 {
-    public async Task<IEnumerable<Subject>> GetBySchoolAsync(int schoolId) 
+    public async Task<IEnumerable<Subject>> GetBySchoolAsync(int schoolId)
     {
         return await GetRangeWhereAsync(s => s.SchoolId == schoolId);
     }

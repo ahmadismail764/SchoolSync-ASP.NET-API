@@ -12,6 +12,6 @@ public interface IGenericService<T> where T : class
     Task<IEnumerable<T>> UpdateRangeWhereAsync(Expression<Func<T, bool>> predicate, T entity);
     Task DeleteAsync(int id);
     Task<IEnumerable<T>> DeleteRangeWhereAsync(Expression<Func<T, bool>> predicate);
-    Task ValidateAsync(T entity);
+    Task ValidateAsync(T entity); // the only diff between here and repo
     Task SaveChangesAsync();
 }

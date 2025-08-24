@@ -8,8 +8,11 @@ public class School
     public string PhoneNumber { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public int OrganizationId { get; set; }
+
+    // Delete magic happens with the following property
     public bool IsActive { get; set; } = true;
 
+    // Navigation Properties
     public Organization Organization { get; set; } = null!;
     public List<User> PeopleHere { get; set; } = new();
     public List<Subject> Subjects { get; set; } = new();
