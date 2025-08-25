@@ -9,6 +9,10 @@ public class GenericService<T>(IGenericRepo<T> repo) : IGenericService<T> where 
 
     public async Task<T?> GetByIdAsync(int id) => await _repo.GetAsync(id);
     public async Task<IEnumerable<T>> GetAllAsync() => await _repo.GetAllAsync();
+    public async Task<IEnumerable<T>> GetRangeWhereAsync(Expression<Func<T, bool>> predicate)
+    => await _repo.GetRangeWhereAsync(predicate);
+
+    // CRUD operations, mostly generic use cases
     public virtual async Task<T> CreateAsync(T entity)
     {
         await ValidateAsync(entity);
@@ -17,32 +21,25 @@ public class GenericService<T>(IGenericRepo<T> repo) : IGenericService<T> where 
         return created;
     }
 
-    public virtual Task ValidateAsync(T entity)
-    {
-        return Task.CompletedTask;
-    }
-
     public async Task UpdateAsync(T entity)
     {
         await _repo.UpdateAsync(entity);
         await ValidateAsync(entity);
         await _repo.SaveChangesAsync();
     }
-    public virtual async Task DeleteAsync(int id)
-    {
-        await _repo.DeleteAsync(id);
-        await _repo.SaveChangesAsync();
-    }
-
-    public async Task<IEnumerable<T>> GetRangeWhereAsync(Expression<Func<T, bool>> predicate)
-        => await _repo.GetRangeWhereAsync(predicate);
-
     public async Task<IEnumerable<T>> UpdateRangeWhereAsync(Expression<Func<T, bool>> predicate, T entity)
     {
         await _repo.UpdateRangeWhereAsync(predicate, entity);
         await _repo.SaveChangesAsync();
         return await _repo.GetRangeWhereAsync(predicate);
     }
+
+    public virtual async Task DeleteAsync(int id)
+    {
+        await _repo.DeleteAsync(id);
+        await _repo.SaveChangesAsync();
+    }
+
 
     public async Task<IEnumerable<T>> DeleteRangeWhereAsync(Expression<Func<T, bool>> predicate)
     {
@@ -51,8 +48,18 @@ public class GenericService<T>(IGenericRepo<T> repo) : IGenericService<T> where 
         return await Task.FromResult(Enumerable.Empty<T>());
     }
 
+
+    // Utility functions start here
     public async Task SaveChangesAsync()
     {
         await _repo.SaveChangesAsync();
     }
+    // Validation function for use by different methods
+    // To be overriden by every derived service
+    public virtual Task ValidateAsync(T entity)
+    {
+        return Task.CompletedTask;
+    }
+    // Utility functions end here
+
 }

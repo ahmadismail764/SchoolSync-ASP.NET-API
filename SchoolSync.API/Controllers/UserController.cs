@@ -8,7 +8,7 @@ using SchoolSync.App.DTOs.User;
 namespace SchoolSync.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/users")]
 [Authorize(Roles = "2")]
 public class UserController
 (IUserService service, IMapper mapper) : ControllerBase
@@ -24,7 +24,6 @@ public class UserController
         {
             var entity = _mapper.Map<User>(dto);
             {
-                // Validate password: must be alphanumeric and not null/empty
                 if (string.IsNullOrWhiteSpace(dto.Password) || !dto.Password.All(char.IsLetterOrDigit))
                     return BadRequest("Password must be alphanumeric.");
                 entity.PasswordHash = dto.Password;
@@ -73,7 +72,6 @@ public class UserController
     {
         var entity = await _service.GetByIdAsync(id);
         if (entity == null) return NotFound();
-        // Only update fields that are not null in the DTO
         if (dto.FullName != null) entity.FullName = dto.FullName;
         if (dto.Email != null) entity.Email = dto.Email;
         if (dto.Username != null) entity.Username = dto.Username;

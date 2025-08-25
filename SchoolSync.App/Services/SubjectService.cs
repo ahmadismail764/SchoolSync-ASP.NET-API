@@ -4,10 +4,9 @@ using SchoolSync.Domain.IServices;
 
 namespace SchoolSync.App.Services;
 
-public class SubjectService(ISubjectRepo subjectRepo, IEnrollmentRepo enrollmentRepo, IUserRepo userRepo)
+public class SubjectService(ISubjectRepo subjectRepo, IUserRepo userRepo)
     : GenericService<Subject>(subjectRepo), ISubjectService
 {
-    private readonly IEnrollmentRepo _enrollmentRepo = enrollmentRepo;
     private readonly IUserRepo _userRepo = userRepo;
 
     public async Task<IEnumerable<Subject>> GetBySchoolAsync(int schoolId) => await subjectRepo.GetBySchoolAsync(schoolId);
@@ -30,22 +29,5 @@ public class SubjectService(ISubjectRepo subjectRepo, IEnrollmentRepo enrollment
             throw new ArgumentException("Teacher must exist and be active.");
         if (teacher.SchoolId != entity.SchoolId)
             throw new ArgumentException("Teacher must be in the same school as the subject.");
-    }
-
-    public override async Task DeleteAsync(int id)
-    {
-        var subject = await _repo.GetAsync(id);
-        if (subject == null || !subject.IsActive) return;
-
-        // Deactivate enrollments
-        var enrollments = await _enrollmentRepo.GetRangeWhereAsync(e => e.SubjectId == subject.Id && e.IsActive);
-        foreach (var enrollment in enrollments)
-        {
-            enrollment.IsActive = false;
-            await _enrollmentRepo.UpdateAsync(enrollment);
-        }
-        subject.IsActive = false;
-        await _repo.UpdateAsync(subject);
-        await _repo.SaveChangesAsync();
     }
 }
