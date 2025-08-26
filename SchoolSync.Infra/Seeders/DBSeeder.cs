@@ -111,7 +111,7 @@ internal class DBSeeder(DBContext context) : IDBSeeder
         if (!await Schools.AnyAsync())
         {
             var orgs = await Organizations.ToListAsync();
-            byte[]? logoBytes = null;
+            byte[] logoBytes;
             var logoPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "SchoolSync.Infra", "SeedFiles", "image.png");
             logoBytes = await File.ReadAllBytesAsync(logoPath);
             var schools = new List<School>
