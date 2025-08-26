@@ -112,21 +112,12 @@ internal class DBSeeder(DBContext context) : IDBSeeder
         {
             var orgs = await Organizations.ToListAsync();
             byte[]? logoBytes = null;
-            string? logoContentType = null;
-            long? logoSize = null;
-            DateTime? logoUploadDate = null;
             var logoPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "SchoolSync.Infra", "SeedFiles", "image.png");
-            if (File.Exists(logoPath))
-            {
-                logoBytes = await File.ReadAllBytesAsync(logoPath);
-                logoContentType = "image/png";
-                logoSize = logoBytes.Length;
-                logoUploadDate = DateTime.UtcNow;
-            }
+            logoBytes = await File.ReadAllBytesAsync(logoPath);
             var schools = new List<School>
             {
-                new() { Name = "Greenfield High", Address = "1 School Lane", PhoneNumber = "+1-555-1100", Email = "admin@greenfieldhigh.edu", OrganizationId = orgs[0].Id, Logo = logoBytes, LogoContentType = logoContentType, LogoSize = logoSize, LogoUploadDate = logoUploadDate },
-                new() { Name = "Blue River Primary", Address = "2 River Rd", PhoneNumber = "+1-555-2100", Email = "office@blueriverprimary.edu", OrganizationId = orgs[1].Id, Logo = logoBytes, LogoContentType = logoContentType, LogoSize = logoSize, LogoUploadDate = logoUploadDate }
+                new() { Name = "Greenfield High", Address = "1 School Lane", PhoneNumber = "+1-555-1100", Email = "admin@greenfieldhigh.edu", OrganizationId = orgs[0].Id, Logo = logoBytes },
+                new() { Name = "Blue River Primary", Address = "2 River Rd", PhoneNumber = "+1-555-2100", Email = "office@blueriverprimary.edu", OrganizationId = orgs[1].Id, Logo = logoBytes }
             };
             await Schools.AddRangeAsync(schools);
             await context.SaveChangesAsync();

@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SchoolSync.App.Services;
 using SchoolSync.Domain.IServices;
 namespace SchoolSync.API.Controllers;
 

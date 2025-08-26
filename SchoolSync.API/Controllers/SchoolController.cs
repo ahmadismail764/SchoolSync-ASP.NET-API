@@ -8,9 +8,6 @@ using SchoolSync.App.DTOs.School;
 using SchoolSync.API.Helpers;
 
 namespace SchoolSync.API.Controllers;
-// ...existing code...
-
-// ...existing code...
 
 [ApiController]
 [Route("api/schools")]
