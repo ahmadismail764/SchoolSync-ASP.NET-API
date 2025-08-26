@@ -1,3 +1,4 @@
-use master;
-
-drop database SchoolSync;
+select
+    *
+from
+    users;
