@@ -5,7 +5,7 @@
 namespace SchoolSync.Infra.Migrations
 {
     /// <inheritdoc />
-    public partial class SeedingFixes : Migration
+    public partial class UpdateSchoolYear2 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
