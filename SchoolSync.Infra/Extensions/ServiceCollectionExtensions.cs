@@ -39,6 +39,7 @@ public static class ServiceCollectionExtensions
         var context = scope.ServiceProvider.GetRequiredService<DBContext>();
         var seeder = scope.ServiceProvider.GetRequiredService<IDBSeeder>();
         await context.Database.EnsureCreatedAsync();
+
         await seeder.SeedAsync();
         return serviceProvider;
     }

@@ -46,7 +46,9 @@ builder.Services.AddSwaggerGen(options =>
         Scheme = "Bearer"
     });
 });
+// Infra layer
 builder.Services.AddInfrastructureServices(builder.Configuration);
+// Application-Use Case layer
 builder.Services.AddAppServices();
 builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly(), typeof(SchoolSync.App.MappingProfiles.UserProfile).Assembly);
 

@@ -11,5 +11,4 @@ public class UserDto
     public int RoleId { get; set; }
     public bool IsActive { get; set; }
 
-    public List<SubjectDto> Subjects { get; set; } = new();
 }

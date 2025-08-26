@@ -9,29 +9,8 @@ Performance Notes:
 - No WHERE clause is present, so the query will return all enrollments, which could impact performance on very large datasets.
 - Consider adding pagination or filtering if the result set is expected to be large.
  */
-SELECT
-    u.Id AS StudentId,
-    u.FullName AS StudentName,
-    s.Id AS SubjectId,
-    s.Name AS SubjectName,
-    t.Id AS TermId,
-    t.Name AS TermName
-FROM
-    Enrollments e
-    INNER JOIN Users u ON e.StudentId = u.Id
-    INNER JOIN Subjects s ON e.SubjectId = s.Id
-    INNER JOIN Terms t ON e.TermId = t.Id;
-
-select
-    Id,
-    FullName,
-    SchoolId
-from
-    Users
-where
-    RoleId = 1;
-
+use SchoolSync
 select
     *
 from
-    Terms;
+    users;
