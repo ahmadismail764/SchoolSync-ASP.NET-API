@@ -48,12 +48,4 @@ public class EnrollmentService(IEnrollmentRepo enrollmentRepo, IUserRepo userRep
             throw new ArgumentException("Term's school year must match the subject's school.");
     }
 
-    public override async Task DeleteAsync(int id)
-    {
-        var enrollment = await _repo.GetAsync(id);
-        if (enrollment == null || !enrollment.IsActive) return;
-        enrollment.IsActive = false;
-        await _repo.UpdateAsync(enrollment);
-        await _repo.SaveChangesAsync();
-    }
 }

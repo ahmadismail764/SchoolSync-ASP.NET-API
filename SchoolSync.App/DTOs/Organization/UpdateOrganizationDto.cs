@@ -4,14 +4,17 @@ namespace SchoolSync.App.DTOs.Organization;
 
 public class UpdateOrganizationDto
 {
-    /// <summary>Name of the organization.</summary>
     [StringLength(100)]
     public string? Name { get; set; }
 
-    /// <summary>Organization address.</summary>
+    [Phone]
+    [StringLength(20)]
+    public string? Phone { get; set; }
+
+    [EmailAddress]
+    [StringLength(100)]
+    public string? Email { get; set; }
+
     [StringLength(200)]
     public string? Address { get; set; }
-
-    /// <summary>Whether the organization is active.</summary>
-    public bool? IsActive { get; set; }
 }

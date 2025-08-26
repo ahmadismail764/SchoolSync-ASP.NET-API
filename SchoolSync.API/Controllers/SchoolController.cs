@@ -8,7 +8,7 @@ using SchoolSync.App.DTOs.School;
 namespace SchoolSync.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/schools")]
 [Authorize(Roles = "2")]
 public class SchoolController(ISchoolService service, IMapper mapper) : ControllerBase
 {
@@ -63,7 +63,6 @@ public class SchoolController(ISchoolService service, IMapper mapper) : Controll
     {
         var entity = await _service.GetByIdAsync(id);
         if (entity == null) return NotFound();
-        // Explicit guard clause pattern for partial update
         if (dto.Name != null) entity.Name = dto.Name;
         if (dto.Address != null) entity.Address = dto.Address;
         if (dto.PhoneNumber != null) entity.PhoneNumber = dto.PhoneNumber;

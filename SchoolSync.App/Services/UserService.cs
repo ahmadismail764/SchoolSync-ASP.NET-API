@@ -4,10 +4,9 @@ using SchoolSync.Domain.IServices;
 
 namespace SchoolSync.App.Services;
 
-public class UserService(IUserRepo userRepo, IEnrollmentRepo enrollmentRepo)
+public class UserService(IUserRepo userRepo)
     : GenericService<User>(userRepo), IUserService
 {
-    private readonly IEnrollmentRepo _enrollmentRepo = enrollmentRepo;
 
     public async Task<User?> GetByUsernameAsync(string username) => await userRepo.GetByUsernameAsync(username);
     public async Task<User?> GetByEmailAsync(string email) => await userRepo.GetByEmailAsync(email);
@@ -15,6 +14,7 @@ public class UserService(IUserRepo userRepo, IEnrollmentRepo enrollmentRepo)
     public async Task<IEnumerable<User>> GetBySchoolAsync(int schoolId) => await userRepo.GetBySchoolAsync(schoolId);
     public async Task<User?> GetStudentWithDetailsAsync(int studentId) => await userRepo.GetAsync(studentId);
     public async Task<IEnumerable<User>> GetAllStudentsWithDetailsAsync() => await userRepo.GetByRoleAsync(2);
+
     public async Task<bool> ValidatePasswordAsync(User user, string password)
     {
         if (user == null || string.IsNullOrEmpty(user.PasswordHash))
@@ -58,22 +58,5 @@ public class UserService(IUserRepo userRepo, IEnrollmentRepo enrollmentRepo)
         var existingByEmail = await userRepo.GetByEmailAsync(entity.Email);
         if (existingByEmail != null && existingByEmail.Id != entity.Id)
             throw new ArgumentException("Email already exists.");
-    }
-
-    public override async Task DeleteAsync(int id)
-    {
-        var user = await _repo.GetAsync(id);
-        if (user == null || !user.IsActive) return;
-
-        // Deactivate enrollments
-        var enrollments = await _enrollmentRepo.GetRangeWhereAsync(e => e.StudentId == user.Id && e.IsActive);
-        foreach (var enrollment in enrollments)
-        {
-            enrollment.IsActive = false;
-            await _enrollmentRepo.UpdateAsync(enrollment);
-        }
-        user.IsActive = false;
-        await _repo.UpdateAsync(user);
-        await _repo.SaveChangesAsync();
     }
 }

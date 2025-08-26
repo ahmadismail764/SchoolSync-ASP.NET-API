@@ -9,7 +9,4 @@ public class SchoolDto
     public string Email { get; set; } = string.Empty;
     public int OrganizationId { get; set; }
     public bool IsActive { get; set; }
-    public SchoolSync.App.DTOs.Organization.OrganizationDto? Organization { get; set; }
-    public List<SchoolSync.App.DTOs.SchoolYear.SchoolYearDto> SchoolYears { get; set; } = new();
-    public List<SchoolSync.App.DTOs.Subject.SubjectDto> Subjects { get; set; } = new();
 }

@@ -1,4 +1,3 @@
-using SchoolSync.App.DTOs.School;
 namespace SchoolSync.App.DTOs.Organization;
 
 public class OrganizationDto
@@ -8,5 +7,4 @@ public class OrganizationDto
     public string Address { get; set; } = null!;
     public string PhoneNumber { get; set; } = null!;
     public string Email { get; set; } = null!;
-    public List<SchoolDto> Schools { get; set; } = new();
 }

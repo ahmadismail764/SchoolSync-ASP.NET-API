@@ -8,7 +8,7 @@ using SchoolSync.App.DTOs.Subject;
 namespace SchoolSync.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/subjects")]
 [Authorize(Roles = "2")]
 public class SubjectController(ISubjectService service, IEnrollmentService enrollmentService, IMapper mapper) : ControllerBase
 {
@@ -64,7 +64,6 @@ public class SubjectController(ISubjectService service, IEnrollmentService enrol
     {
         var entity = await _service.GetByIdAsync(id);
         if (entity == null) return NotFound();
-        // Explicit guard clause pattern for partial update
         if (dto.Name != null) entity.Name = dto.Name;
         if (dto.Code != null) entity.Code = dto.Code;
         if (dto.Credits.HasValue) entity.Credits = dto.Credits.Value;

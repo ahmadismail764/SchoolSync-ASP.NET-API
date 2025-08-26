@@ -8,7 +8,7 @@ using SchoolSync.App.DTOs.SchoolYear;
 namespace SchoolSync.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/schoolyears")]
 [Authorize(Roles = "2")]
 public class SchoolYearController(ISchoolYearService service, IMapper mapper) : ControllerBase
 {
