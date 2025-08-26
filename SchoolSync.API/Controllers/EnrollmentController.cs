@@ -60,7 +60,6 @@ public class EnrollmentController(IEnrollmentService enrollmentService, IMapper 
         if (dto.TermId.HasValue) entity.TermId = dto.TermId.Value;
         if (dto.EnrollmentDate.HasValue) entity.EnrollmentDate = dto.EnrollmentDate.Value;
         if (dto.Grade.HasValue) entity.Grade = dto.Grade.Value;
-        if (dto.IsActive.HasValue) entity.IsActive = dto.IsActive.Value;
         try
         {
             await _service.UpdateAsync(entity);

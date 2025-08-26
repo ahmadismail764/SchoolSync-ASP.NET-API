@@ -77,7 +77,6 @@ public class UserController
         if (dto.Username != null) entity.Username = dto.Username;
         if (dto.SchoolId.HasValue) entity.SchoolId = dto.SchoolId.Value;
         if (dto.RoleId.HasValue) entity.RoleId = dto.RoleId.Value;
-        if (dto.IsActive.HasValue) entity.IsActive = dto.IsActive.Value;
         try
         {
             await _service.UpdateAsync(entity);

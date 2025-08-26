@@ -68,7 +68,6 @@ public class SchoolController(ISchoolService service, IMapper mapper) : Controll
         if (dto.PhoneNumber != null) entity.PhoneNumber = dto.PhoneNumber;
         if (dto.Email != null) entity.Email = dto.Email;
         if (dto.OrganizationId.HasValue) entity.OrganizationId = dto.OrganizationId.Value;
-        if (dto.IsActive.HasValue) entity.IsActive = dto.IsActive.Value;
         try
         {
             await _service.UpdateAsync(entity);
@@ -95,7 +94,6 @@ public class SchoolController(ISchoolService service, IMapper mapper) : Controll
             if (dto.PhoneNumber != null) patch.PhoneNumber = dto.PhoneNumber;
             if (dto.Email != null) patch.Email = dto.Email;
             if (dto.OrganizationId.HasValue) patch.OrganizationId = dto.OrganizationId.Value;
-            if (dto.IsActive.HasValue) patch.IsActive = dto.IsActive.Value;
             var updated = await _service.UpdateRangeWhereAsync(
                 school => string.IsNullOrEmpty(nameContains) || school.Name.Contains(nameContains, StringComparison.OrdinalIgnoreCase),
                 patch

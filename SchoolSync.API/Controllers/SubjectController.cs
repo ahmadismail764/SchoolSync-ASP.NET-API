@@ -69,7 +69,6 @@ public class SubjectController(ISubjectService service, IEnrollmentService enrol
         if (dto.Credits.HasValue) entity.Credits = dto.Credits.Value;
         if (dto.SchoolId.HasValue) entity.SchoolId = dto.SchoolId.Value;
         if (dto.TeacherId.HasValue) entity.TeacherId = dto.TeacherId.Value;
-        if (dto.IsActive.HasValue) entity.IsActive = dto.IsActive.Value;
         try
         {
             await _service.UpdateAsync(entity);

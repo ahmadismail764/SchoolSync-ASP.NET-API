@@ -63,11 +63,9 @@ public class TermController(ITermService service, IMapper mapper) : ControllerBa
     {
         var entity = await _service.GetByIdAsync(id);
         if (entity == null) return NotFound();
-        // Explicit guard clause pattern for partial update
         if (dto.Name != null) entity.Name = dto.Name;
         if (dto.StartDate.HasValue) entity.StartDate = dto.StartDate.Value;
         if (dto.EndDate.HasValue) entity.EndDate = dto.EndDate.Value;
-        if (dto.IsActive.HasValue) entity.IsActive = dto.IsActive.Value;
         try
         {
             await _service.UpdateAsync(entity);
