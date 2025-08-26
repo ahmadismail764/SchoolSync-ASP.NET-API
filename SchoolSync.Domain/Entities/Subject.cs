@@ -13,4 +13,7 @@ public class Subject
     public User Teacher { get; set; } = null!;
     public School School { get; set; } = null!;
     public List<Enrollment> Enrollments { get; set; } = new();
+
+    // Navigation property for lessons
+    public List<Lesson> Lessons { get; set; } = new();
 }

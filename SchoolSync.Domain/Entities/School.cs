@@ -9,6 +9,10 @@ public class School
     public string Email { get; set; } = string.Empty;
     public int OrganizationId { get; set; }
 
+
+    // School logo image (optional)
+    public byte[]? Logo { get; set; }
+
     // Delete magic happens with the following property
     public bool IsActive { get; set; } = true;
 

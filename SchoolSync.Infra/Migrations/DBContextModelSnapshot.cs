@@ -60,6 +60,61 @@ namespace SchoolSync.Infra.Migrations
                     b.ToTable("Enrollments");
                 });
 
+            modelBuilder.Entity("SchoolSync.Domain.Entities.Lesson", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SubjectId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SubjectId");
+
+                    b.ToTable("Lesson");
+                });
+
+            modelBuilder.Entity("SchoolSync.Domain.Entities.Material", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("Data")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("LessonId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LessonId");
+
+                    b.ToTable("Material");
+                });
+
             modelBuilder.Entity("SchoolSync.Domain.Entities.Organization", b =>
                 {
                     b.Property<int>("Id")
@@ -131,6 +186,9 @@ namespace SchoolSync.Infra.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<byte[]>("Logo")
+                        .HasColumnType("varbinary(max)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -162,10 +220,6 @@ namespace SchoolSync.Infra.Migrations
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("SchoolId")
                         .HasColumnType("int");
@@ -353,6 +407,28 @@ namespace SchoolSync.Infra.Migrations
                     b.Navigation("Term");
                 });
 
+            modelBuilder.Entity("SchoolSync.Domain.Entities.Lesson", b =>
+                {
+                    b.HasOne("SchoolSync.Domain.Entities.Subject", "Subject")
+                        .WithMany("Lessons")
+                        .HasForeignKey("SubjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Subject");
+                });
+
+            modelBuilder.Entity("SchoolSync.Domain.Entities.Material", b =>
+                {
+                    b.HasOne("SchoolSync.Domain.Entities.Lesson", "Lesson")
+                        .WithMany("Materials")
+                        .HasForeignKey("LessonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Lesson");
+                });
+
             modelBuilder.Entity("SchoolSync.Domain.Entities.School", b =>
                 {
                     b.HasOne("SchoolSync.Domain.Entities.Organization", "Organization")
@@ -435,6 +511,11 @@ namespace SchoolSync.Infra.Migrations
                     b.Navigation("School");
                 });
 
+            modelBuilder.Entity("SchoolSync.Domain.Entities.Lesson", b =>
+                {
+                    b.Navigation("Materials");
+                });
+
             modelBuilder.Entity("SchoolSync.Domain.Entities.Organization", b =>
                 {
                     b.Navigation("Schools");
@@ -462,6 +543,8 @@ namespace SchoolSync.Infra.Migrations
             modelBuilder.Entity("SchoolSync.Domain.Entities.Subject", b =>
                 {
                     b.Navigation("Enrollments");
+
+                    b.Navigation("Lessons");
                 });
 
             modelBuilder.Entity("SchoolSync.Domain.Entities.Term", b =>
