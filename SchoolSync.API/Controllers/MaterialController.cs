@@ -14,10 +14,11 @@ public class MaterialController(IMaterialService materialService) : ControllerBa
     public async Task<IActionResult> Download(int id)
     {
         var material = await _materialService.GetByIdAsync(id);
-        if (material == null) return NotFound();
-        var fileData = material.FileData;
-        if (fileData == null || fileData.Length == 0) return NotFound();
-        return File(fileData, material.ContentType, material.FileName);
+        if (material == null)
+            return NotFound(new { description = $"Material with ID {id} not found." });
+        if (material.FileData == null || material.FileData.Length == 0)
+            return NotFound(new { description = "File data is missing for this material." });
+        return File(material.FileData, material.ContentType, material.FileName);
     }
 
     [HttpPost("upload")]
@@ -25,7 +26,7 @@ public class MaterialController(IMaterialService materialService) : ControllerBa
     {
         // Check null-ness
         if (file == null || file.Length == 0)
-            return BadRequest("No file uploaded.");
+            return BadRequest(new { description = "No file uploaded." });
 
         // Now actually handle it
         UploadResult uploadResult;
@@ -34,11 +35,11 @@ public class MaterialController(IMaterialService materialService) : ControllerBa
         else if (file.ContentType.StartsWith("video/", StringComparison.OrdinalIgnoreCase))
             uploadResult = await UploadHandler.HandleVideoUpload(file);
         else
-            return BadRequest("Unsupported file type. Only PDF and video files are allowed.");
+            return BadRequest(new { description = "Unsupported file type. Only PDF and video files are allowed." });
 
         // Something bad happened?
         if (!uploadResult.Success)
-            return BadRequest(uploadResult.ErrorMessage);
+            return BadRequest(new { description = uploadResult.ErrorMessage ?? "File upload failed." });
 
         var material = new Material
         {
@@ -49,7 +50,6 @@ public class MaterialController(IMaterialService materialService) : ControllerBa
             FileData = uploadResult.FileData!,
             Description = description
         };
-        // bye bye
         await _materialService.CreateAsync(material);
         return NoContent();
     }
