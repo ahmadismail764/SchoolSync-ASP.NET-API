@@ -1,95 +1,72 @@
-using SchoolSync.Domain.Entities;
-using System.IO;
-
 namespace SchoolSync.API.Helpers;
 
-public class UploadResult
+public static class UploadHandler
 {
-    public bool Success { get; set; }
-    public string? Message { get; set; }
-    public string? FileName { get; set; }
-    public string? ContentType { get; set; }
-    public long FileSize { get; set; }
-    public MaterialType? MaterialType { get; set; }
-}
-
-public class UploadHandler
-{
-    private const long MaxLogoSize = 5 * 1024 * 1024; // 5MB
-    private const long MaxMaterialSize = 100 * 1024 * 1024; // 100MB
-
-    private static readonly string[] ValidLogoExtensions = [".jpg", ".jpeg", ".png", ".gif"];
-    private static readonly string[] ValidMaterialExtensions = [".pdf", ".doc", ".docx", ".txt", ".mp4", ".webm", ".mov", ".avi"];
-
-    public async Task<UploadResult> UploadLogoAsync(IFormFile file)
-    {
-        var result = await ValidateFile(file, ValidLogoExtensions, MaxLogoSize);
-        if (!result.Success)
-            return result;
-
-        // Additional logo-specific validation
-        if (!file.ContentType.StartsWith("image/"))
-        {
-            return new UploadResult
-            {
-                Success = false,
-                Message = "Invalid file type for logo. Only image files are allowed."
-            };
-        }
-
-        result.MaterialType = MaterialType.Image;
-        return result;
-    }
-
-    public async Task<UploadResult> UploadMaterialAsync(IFormFile file)
-    {
-        var result = await ValidateFile(file, ValidMaterialExtensions, MaxMaterialSize);
-        if (!result.Success)
-            return result;
-
-        // Set material type based on file extension
-        result.MaterialType = Material.GetMaterialTypeFromFileName(file.FileName);
-        return result;
-    }
-
-    private async Task<UploadResult> ValidateFile(IFormFile file, string[] validExtensions, long maxSize)
+    public static async Task<UploadResult> HandlePdfUpload(IFormFile file)
     {
         if (file == null || file.Length == 0)
-        {
-            return new UploadResult { Success = false, Message = "No file uploaded." };
-        }
+            return new UploadResult { Success = false, ErrorMessage = "No file uploaded." };
 
-        string extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-        if (string.IsNullOrEmpty(extension) || !validExtensions.Contains(extension))
-        {
-            return new UploadResult
-            {
-                Success = false,
-                Message = $"Invalid file extension. Valid extensions are: {string.Join(", ", validExtensions)}"
-            };
-        }
+        if (!file.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase))
+            return new UploadResult { Success = false, ErrorMessage = "Only PDF files are allowed." };
 
-        if (file.Length > maxSize)
-        {
-            return new UploadResult
-            {
-                Success = false,
-                Message = $"File size is too large. Maximum allowed size is {maxSize / (1024 * 1024)}MB."
-            };
-        }
-
-        var fileName = $"{Guid.NewGuid()}{extension}";
-
-        // Read file content
-        using var memoryStream = new MemoryStream();
-        await file.CopyToAsync(memoryStream);
-
+        using var ms = new MemoryStream();
+        await file.CopyToAsync(ms);
         return new UploadResult
         {
             Success = true,
-            FileName = fileName,
-            ContentType = file.ContentType,
-            FileSize = file.Length
+            FileData = ms.ToArray(),
+            FileName = file.FileName,
+            ContentType = file.ContentType
         };
     }
+
+    public static async Task<UploadResult> HandleImageUpload(IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+            return new UploadResult { Success = false, ErrorMessage = "No file uploaded." };
+
+        var allowedTypes = new[] { "image/jpeg", "image/png", "image/gif" };
+        if (Array.IndexOf(allowedTypes, file.ContentType.ToLower()) == -1)
+            return new UploadResult { Success = false, ErrorMessage = "Only JPEG, PNG, or GIF images are allowed." };
+
+        using var ms = new MemoryStream();
+        await file.CopyToAsync(ms);
+        return new UploadResult
+        {
+            Success = true,
+            FileData = ms.ToArray(),
+            FileName = file.FileName,
+            ContentType = file.ContentType
+        };
+    }
+
+    public static async Task<UploadResult> HandleVideoUpload(IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+            return new UploadResult { Success = false, ErrorMessage = "No file uploaded." };
+
+        var allowedTypes = new[] { "video/mp4", "video/avi", "video/mpeg", "video/quicktime" };
+        if (Array.IndexOf(allowedTypes, file.ContentType.ToLower()) == -1)
+            return new UploadResult { Success = false, ErrorMessage = "Only MP4, AVI, MPEG, or MOV videos are allowed." };
+
+        using var ms = new MemoryStream();
+        await file.CopyToAsync(ms);
+        return new UploadResult
+        {
+            Success = true,
+            FileData = ms.ToArray(),
+            FileName = file.FileName,
+            ContentType = file.ContentType
+        };
+    }
+}
+public class UploadResult
+{
+    public bool Success { get; set; }
+    public byte[] FileData { get; set; } = null!;
+    public string FileName { get; set; } = null!;
+    public string ContentType { get; set; } = null!;
+    public string? ErrorMessage { get; set; }
+
 }

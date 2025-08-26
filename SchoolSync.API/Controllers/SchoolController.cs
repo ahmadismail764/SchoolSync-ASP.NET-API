@@ -1,11 +1,16 @@
+
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SchoolSync.Domain.Entities;
 using SchoolSync.Domain.IServices;
 using SchoolSync.App.DTOs.School;
+using SchoolSync.API.Helpers;
 
 namespace SchoolSync.API.Controllers;
+// ...existing code...
+
+// ...existing code...
 
 [ApiController]
 [Route("api/schools")]
@@ -134,4 +139,32 @@ public class SchoolController(ISchoolService service, IMapper mapper) : Controll
             return StatusCode(500, $"An error occurred: {ex.Message}");
         }
     }
+
+    [HttpPost("{id}/upload-logo")]
+    public async Task<IActionResult> UploadLogo(int id, [FromForm] IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+            return BadRequest("No file uploaded.");
+
+        // Only accept image files
+        UploadResult uploadResult;
+        if (file.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+            uploadResult = await UploadHandler.HandleImageUpload(file);
+        else
+            return BadRequest("Unsupported file type. Only images are allowed.");
+
+        // Something bad happened?
+        if (!uploadResult.Success)
+            return BadRequest(uploadResult.ErrorMessage);
+
+        // Update the school's logo path after successful upload
+        var school = await _service.GetByIdAsync(id);
+        if (school == null)
+            return NotFound("School not found.");
+
+        school.Logo = uploadResult.FileData;
+        await _service.UpdateAsync(school);
+        return NoContent();
+    }
+
 }

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using SchoolSync.Domain.Entities;
 using SchoolSync.Domain.IServices;
 using SchoolSync.App.DTOs.Organization;
-
+using SchoolSync.API.Helpers;
 namespace SchoolSync.API.Controllers;
 
 [ApiController]
@@ -124,5 +124,31 @@ public class OrganizationController(IOrganizationService service, IMapper mapper
         {
             return StatusCode(500, $"An error occurred: {ex.Message}");
         }
+    }
+    [HttpPost("{id}/upload-logo")]
+    public async Task<IActionResult> UploadLogo(int id, [FromForm] IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+            return BadRequest("No file uploaded.");
+
+        // Only accept image files
+        UploadResult uploadResult;
+        if (file.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+            uploadResult = await UploadHandler.HandleImageUpload(file);
+        else
+            return BadRequest("Unsupported file type. Only images are allowed.");
+
+        // Something bad happened?
+        if (!uploadResult.Success)
+            return BadRequest(uploadResult.ErrorMessage);
+
+        // Update the school's logo path after successful upload
+        var org = await _service.GetByIdAsync(id);
+        if (org == null)
+            return NotFound("Org not found.");
+
+        org.Logo = uploadResult.FileData;
+        await _service.UpdateAsync(org);
+        return NoContent();
     }
 }

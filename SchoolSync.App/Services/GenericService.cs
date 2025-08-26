@@ -7,12 +7,13 @@ public class GenericService<T>(IGenericRepo<T> repo) : IGenericService<T> where 
 {
     protected readonly IGenericRepo<T> _repo = repo;
 
+
+    // CRUD operations, mostly generic use cases
     public async Task<T?> GetByIdAsync(int id) => await _repo.GetAsync(id);
     public async Task<IEnumerable<T>> GetAllAsync() => await _repo.GetAllAsync();
     public async Task<IEnumerable<T>> GetRangeWhereAsync(Expression<Func<T, bool>> predicate)
     => await _repo.GetRangeWhereAsync(predicate);
 
-    // CRUD operations, mostly generic use cases
     public virtual async Task<T> CreateAsync(T entity)
     {
         await ValidateAsync(entity);
