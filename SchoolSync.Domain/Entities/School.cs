@@ -1,4 +1,4 @@
-﻿namespace SchoolSync.Domain.Entities;
+namespace SchoolSync.Domain.Entities;
 
 public class School
 {
@@ -12,6 +12,9 @@ public class School
 
     // School logo image (optional)
     public byte[]? Logo { get; set; }
+    public string? LogoContentType { get; set; }
+    public long? LogoSize { get; set; }
+    public DateTime? LogoUploadDate { get; set; }
 
     // Delete magic happens with the following property
     public bool IsActive { get; set; } = true;
