@@ -16,16 +16,16 @@ public class GenericService<T>(IGenericRepo<T> repo) : IGenericService<T> where 
 
     public virtual async Task<T> CreateAsync(T entity)
     {
-        await ValidateAsync(entity);
+        await ValidateCreateAsync(entity);
         var created = await _repo.CreateAsync(entity);
         await _repo.SaveChangesAsync();
         return created;
     }
 
-    public async Task UpdateAsync(T entity)
+    public virtual async Task UpdateAsync(T entity)
     {
+        await ValidateUpdateAsync(entity);
         await _repo.UpdateAsync(entity);
-        await ValidateAsync(entity);
         await _repo.SaveChangesAsync();
     }
     public async Task<IEnumerable<T>> UpdateRangeWhereAsync(Expression<Func<T, bool>> predicate, T entity)
@@ -57,7 +57,12 @@ public class GenericService<T>(IGenericRepo<T> repo) : IGenericService<T> where 
     }
     // Validation function for use by different methods
     // To be overriden by every derived service
-    public virtual Task ValidateAsync(T entity)
+    public virtual Task ValidateCreateAsync(T entity)
+    {
+        return Task.CompletedTask;
+    }
+
+    public virtual Task ValidateUpdateAsync(T entity)
     {
         return Task.CompletedTask;
     }
