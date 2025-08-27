@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using SchoolSync.API.Helpers;
 using SchoolSync.Domain.Entities;
 using SchoolSync.Domain.IServices;
+using SchoolSync.App.DTOs.Uploads;
 namespace SchoolSync.API.Controllers;
 
 [ApiController]
@@ -22,8 +23,10 @@ public class MaterialController(IMaterialService materialService) : ControllerBa
     }
 
     [HttpPost("upload")]
-    public async Task<IActionResult> Upload([FromForm] int lessonId, [FromForm] string? description, [FromForm] IFormFile file)
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> Upload([FromForm] int lessonId, [FromForm] string? description, [FromForm] UploadMaterialDto uploaded_file)
     {
+        var file = uploaded_file.File;
         // Check null-ness
         if (file == null || file.Length == 0)
             return BadRequest(new { description = "No file uploaded." });

@@ -1,10 +1,10 @@
-
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SchoolSync.Domain.Entities;
 using SchoolSync.Domain.IServices;
 using SchoolSync.App.DTOs.School;
+using SchoolSync.App.DTOs.Uploads;
 using SchoolSync.API.Helpers;
 
 namespace SchoolSync.API.Controllers;
@@ -138,8 +138,11 @@ public class SchoolController(ISchoolService service, IMapper mapper) : Controll
     }
 
     [HttpPost("{id}/upload-logo")]
-    public async Task<IActionResult> UploadLogo(int id, [FromForm] IFormFile file)
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> UploadLogo(int id, [FromForm] UploadMaterialDto uploaded_file)
     {
+        var file = uploaded_file.File;
+        // Check null-ness
         if (file == null || file.Length == 0)
             return BadRequest("No file uploaded.");
 
