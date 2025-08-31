@@ -11,23 +11,4 @@ public class SubjectService(ISubjectRepo subjectRepo, IUserRepo userRepo)
 
     public async Task<IEnumerable<Subject>> GetBySchoolAsync(int schoolId) => await subjectRepo.GetBySchoolAsync(schoolId);
     public async Task<IEnumerable<Subject>> GetByTeacherAsync(int teacherId) => await subjectRepo.GetByTeacherAsync(teacherId);
-    public override async Task ValidateAsync(Subject entity)
-    {
-        if (string.IsNullOrWhiteSpace(entity.Name))
-            throw new ArgumentException("Subject name is required.");
-        if (string.IsNullOrWhiteSpace(entity.Code))
-            throw new ArgumentException("Subject code is required.");
-        if (entity.Credits < 1)
-            throw new ArgumentException("Credits must be at least 1.");
-        if (entity.SchoolId <= 0)
-            throw new ArgumentException("SchoolId must be set.");
-        if (entity.TeacherId <= 0)
-            throw new ArgumentException("TeacherId must be set.");
-        // Cross-entity: Teacher must exist, be active, and be in the same school
-        var teacher = await _userRepo.GetAsync(entity.TeacherId);
-        if (teacher == null || !teacher.IsActive)
-            throw new ArgumentException("Teacher must exist and be active.");
-        if (teacher.SchoolId != entity.SchoolId)
-            throw new ArgumentException("Teacher must be in the same school as the subject.");
-    }
 }

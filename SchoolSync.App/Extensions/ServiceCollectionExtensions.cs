@@ -17,6 +17,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITermService, TermService>();
         services.AddScoped<ISchoolYearService, SchoolYearService>();
         services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IMaterialService, MaterialService>();
+        services.AddScoped<ILessonService, LessonService>();
         services.AddAutoMapper(Assembly.GetExecutingAssembly());
         return services;
     }

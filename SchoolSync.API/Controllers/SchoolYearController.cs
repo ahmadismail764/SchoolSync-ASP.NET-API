@@ -57,7 +57,6 @@ public class SchoolYearController(ISchoolYearService service, IMapper mapper) : 
         if (dto.StartDate.HasValue) entity.StartDate = dto.StartDate.Value;
         if (dto.EndDate.HasValue) entity.EndDate = dto.EndDate.Value;
         if (dto.SchoolId.HasValue) entity.SchoolId = dto.SchoolId.Value;
-        if (dto.IsActive.HasValue) entity.IsActive = dto.IsActive.Value;
         try
         {
             await _service.UpdateAsync(entity);

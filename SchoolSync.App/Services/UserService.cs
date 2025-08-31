@@ -30,33 +30,4 @@ public class UserService(IUserRepo userRepo)
         var isValid = await ValidatePasswordAsync(user, password);
         return isValid ? user : null;
     }
-    public override async Task<User> CreateAsync(User entity)
-    {
-        await ValidateAsync(entity);
-        if (!string.IsNullOrEmpty(entity.PasswordHash))
-            entity.PasswordHash = BCrypt.Net.BCrypt.HashPassword(entity.PasswordHash);
-        return await base.CreateAsync(entity);
-    }
-
-    public override async Task ValidateAsync(User entity)
-    {
-        if (string.IsNullOrWhiteSpace(entity.FullName))
-            throw new ArgumentException("Full name is required.");
-        if (string.IsNullOrWhiteSpace(entity.Username))
-            throw new ArgumentException("Username is required.");
-        if (string.IsNullOrWhiteSpace(entity.Email) || !entity.Email.Contains('@'))
-            throw new ArgumentException("Valid email is required.");
-        if (entity.RoleId <= 0)
-            throw new ArgumentException("RoleId must be set.");
-        if (entity.SchoolId <= 0)
-            throw new ArgumentException("SchoolId must be set.");
-
-        var existingByUsername = await userRepo.GetByUsernameAsync(entity.Username);
-        if (existingByUsername != null)
-            throw new ArgumentException("Username already exists.");
-
-        var existingByEmail = await userRepo.GetByEmailAsync(entity.Email);
-        if (existingByEmail != null && existingByEmail.Id != entity.Id)
-            throw new ArgumentException("Email already exists.");
-    }
 }

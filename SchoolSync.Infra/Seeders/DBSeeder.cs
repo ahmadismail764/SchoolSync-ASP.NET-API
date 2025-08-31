@@ -30,6 +30,52 @@ internal class DBSeeder(DBContext context) : IDBSeeder
         await SeedSchoolYearsAsync();
         await SeedTermsAsync();
         await SeedEnrollmentsAsync();
+        await SeedLessonsAsync();
+        await SeedMaterialsAsync();
+    }
+    private async Task SeedLessonsAsync()
+    {
+        if (!context.Lessons.Any())
+        {
+            var subjects = await Subjects.ToListAsync();
+            var lessons = new List<Lesson>
+            {
+                new() { Title = "Lesson 1", Description = "Intro Lesson", SubjectId = subjects[0].Id },
+                new() { Title = "Lesson 2", Description = "Second Lesson", SubjectId = subjects[0].Id }
+            };
+            await context.Lessons.AddRangeAsync(lessons);
+            await context.SaveChangesAsync();
+        }
+    }
+
+    private async Task SeedMaterialsAsync()
+    {
+        if (!context.Materials.Any())
+        {
+            // Dummy PDF
+            var lesson = await context.Lessons.FirstOrDefaultAsync();
+            if (lesson != null)
+            {
+                var pdfPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "SchoolSync.Infra", "SeedFiles", "AhmadIsmail-Resume.pdf");
+                if (File.Exists(pdfPath))
+                {
+                    var pdfBytes = await File.ReadAllBytesAsync(pdfPath);
+                    var material = new Material
+                    {
+                        FileName = "AhmadIsmail-Resume.pdf",
+                        ContentType = "application/pdf",
+                        FileType = "pdf",
+                        FileSize = pdfBytes.Length,
+                        FileData = pdfBytes,
+                        UploadDate = DateTime.UtcNow,
+                        Description = "Dummy PDF for seeding",
+                        LessonId = lesson.Id
+                    };
+                    await context.Materials.AddAsync(material);
+                }
+            }
+            await context.SaveChangesAsync();
+        }
     }
 
     private async Task SeedRolesAsync()
@@ -65,10 +111,13 @@ internal class DBSeeder(DBContext context) : IDBSeeder
         if (!await Schools.AnyAsync())
         {
             var orgs = await Organizations.ToListAsync();
+            byte[] logoBytes;
+            var logoPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "SchoolSync.Infra", "SeedFiles", "image.png");
+            logoBytes = await File.ReadAllBytesAsync(logoPath);
             var schools = new List<School>
             {
-                new() { Name = "Greenfield High", Address = "1 School Lane", PhoneNumber = "+1-555-1100", Email = "admin@greenfieldhigh.edu", OrganizationId = orgs[0].Id },
-                new() { Name = "Blue River Primary", Address = "2 River Rd", PhoneNumber = "+1-555-2100", Email = "office@blueriverprimary.edu", OrganizationId = orgs[1].Id }
+                new() { Name = "Greenfield High", Address = "1 School Lane", PhoneNumber = "+1-555-1100", Email = "admin@greenfieldhigh.edu", OrganizationId = orgs[0].Id, Logo = logoBytes },
+                new() { Name = "Blue River Primary", Address = "2 River Rd", PhoneNumber = "+1-555-2100", Email = "office@blueriverprimary.edu", OrganizationId = orgs[1].Id, Logo = logoBytes }
             };
             await Schools.AddRangeAsync(schools);
             await context.SaveChangesAsync();

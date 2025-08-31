@@ -13,5 +13,4 @@ public class UpdateEnrollmentDto
     public DateTime? EnrollmentDate { get; set; }
 
     public decimal? Grade { get; set; }
-    public bool? IsActive { get; set; }
 }

@@ -8,6 +8,7 @@ public class Organization
     public string PhoneNumber { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
 
+    public byte[]? Logo { get; set; }
     // The following property is for soft delete
     public bool IsActive { get; set; } = true;
     public List<School> Schools { get; set; } = new();

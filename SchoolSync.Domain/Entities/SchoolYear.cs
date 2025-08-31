@@ -9,5 +9,5 @@ public class SchoolYear
     public int SchoolId { get; set; }
     public bool IsActive { get; set; } = true;
     public School School { get; set; } = null!;
-    public List<Term> Terms { get; set; } = new();
+    public List<Term> Terms { get; set; } = [];
 }

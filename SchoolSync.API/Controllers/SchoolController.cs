@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using SchoolSync.Domain.Entities;
 using SchoolSync.Domain.IServices;
 using SchoolSync.App.DTOs.School;
+using SchoolSync.App.DTOs.Uploads;
+using SchoolSync.API.Helpers;
 
 namespace SchoolSync.API.Controllers;
 
@@ -68,7 +70,6 @@ public class SchoolController(ISchoolService service, IMapper mapper) : Controll
         if (dto.PhoneNumber != null) entity.PhoneNumber = dto.PhoneNumber;
         if (dto.Email != null) entity.Email = dto.Email;
         if (dto.OrganizationId.HasValue) entity.OrganizationId = dto.OrganizationId.Value;
-        if (dto.IsActive.HasValue) entity.IsActive = dto.IsActive.Value;
         try
         {
             await _service.UpdateAsync(entity);
@@ -95,7 +96,6 @@ public class SchoolController(ISchoolService service, IMapper mapper) : Controll
             if (dto.PhoneNumber != null) patch.PhoneNumber = dto.PhoneNumber;
             if (dto.Email != null) patch.Email = dto.Email;
             if (dto.OrganizationId.HasValue) patch.OrganizationId = dto.OrganizationId.Value;
-            if (dto.IsActive.HasValue) patch.IsActive = dto.IsActive.Value;
             var updated = await _service.UpdateRangeWhereAsync(
                 school => string.IsNullOrEmpty(nameContains) || school.Name.Contains(nameContains, StringComparison.OrdinalIgnoreCase),
                 patch
@@ -136,4 +136,35 @@ public class SchoolController(ISchoolService service, IMapper mapper) : Controll
             return StatusCode(500, $"An error occurred: {ex.Message}");
         }
     }
+
+    [HttpPost("{id}/upload-logo")]
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> UploadLogo(int id, [FromForm] UploadMaterialDto uploaded_file)
+    {
+        var file = uploaded_file.File;
+        // Check null-ness
+        if (file == null || file.Length == 0)
+            return BadRequest("No file uploaded.");
+
+        // Only accept image files
+        UploadResult uploadResult;
+        if (file.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+            uploadResult = await UploadHandler.HandleImageUpload(file);
+        else
+            return BadRequest("Unsupported file type. Only images are allowed.");
+
+        // Something bad happened?
+        if (!uploadResult.Success)
+            return BadRequest(uploadResult.ErrorMessage);
+
+        // Update the school's logo path after successful upload
+        var school = await _service.GetByIdAsync(id);
+        if (school == null)
+            return NotFound("School not found.");
+
+        school.Logo = uploadResult.FileData;
+        await _service.UpdateAsync(school);
+        return NoContent();
+    }
+
 }
