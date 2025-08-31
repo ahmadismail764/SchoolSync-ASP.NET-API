@@ -1,4 +1,8 @@
 select
-    *
+    schoolyears.id as scholyearid,
+    year,
+    name,
+    SchoolYears.IsActive as schoolyearactive
 from
-    Schools;
+    schoolyears
+    left join schools on schools.id = schoolyears.schoolId;

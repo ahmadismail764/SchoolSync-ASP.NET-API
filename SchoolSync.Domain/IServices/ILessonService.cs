@@ -1,6 +1,7 @@
+using SchoolSync.Domain.Entities;
 namespace SchoolSync.Domain.IServices;
 
-public interface ILessonService<T> : IGenericService<T> where T : class
+public interface ILessonService : IGenericService<Lesson>
 {
-    Task<IEnumerable<T>> GetBySubjectAsync(int SubjectId);
+    Task<IEnumerable<Lesson>> GetBySubjectAsync(int SubjectId);
 }

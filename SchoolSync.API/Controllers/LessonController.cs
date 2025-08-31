@@ -9,9 +9,9 @@ namespace SchoolSync.API.Controllers;
 [ApiController]
 [Route("api/lesson")]
 [Authorize(Roles = "2")]
-public class LessonController(ILessonService<Lesson> lessonService, IMapper mapper) : ControllerBase
+public class LessonController(ILessonService lessonService, IMapper mapper) : ControllerBase
 {
-    private readonly ILessonService<Lesson> _lessonService = lessonService;
+    private readonly ILessonService _lessonService = lessonService;
     private readonly IMapper _mapper = mapper;
 
     [HttpGet]

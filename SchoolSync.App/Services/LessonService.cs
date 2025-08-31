@@ -3,7 +3,7 @@ using SchoolSync.Domain.IRepositories;
 using SchoolSync.Domain.Entities;
 namespace SchoolSync.App.Services;
 
-public class LessonService(ILessonRepo repo) : GenericService<Lesson>(repo), ILessonService<Lesson>
+public class LessonService(ILessonRepo repo) : GenericService<Lesson>(repo), ILessonService
 {
     public async Task<IEnumerable<Lesson>> GetBySubjectAsync(int SubjectId) => await GetRangeWhereAsync(x => x.SubjectId == SubjectId);
 
