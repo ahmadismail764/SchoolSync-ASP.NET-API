@@ -1,6 +1,8 @@
 # SchoolSync ASP.NET Core API
 
-SchoolSync is a robust, modular, and extensible ASP.NET Core Web API designed for comprehensive school and academic management. It supports organizations, schools, users, roles, subjects, lessons, materials, enrollments, school years, and terms. The system is built with clean architecture principles, strong validation, and a focus on maintainability and scalability.
+SchoolSync is a production-grade, modular, and extensible ASP.NET Core Web API for managing the full lifecycle of academic organizations. It is engineered with a strong focus on maintainability, testability, and scalability, using modern software engineering principles such as Clean Architecture, Domain-Driven Design (DDD), and SOLID. The system is designed to be realistic for real-world deployments in schools, universities, or educational platforms.
+
+---
 
 ---
 
@@ -20,34 +22,46 @@ SchoolSync is a robust, modular, and extensible ASP.NET Core Web API designed fo
 
 ---
 
-## Project Structure
+## Project Structure & Engineering Principles
 
-- **SchoolSync.API** — Main API project (controllers, startup, configuration)
-- **SchoolSync.Infra** — Infrastructure layer (EF Core DbContext, migrations, repositories)
-- **SchoolSync.Domain** — Domain entities and interfaces (core business models)
-- **SchoolSync.App** — Application services (business logic, validation, service layer)
+- **SchoolSync.API** — API layer. Contains controllers, dependency injection setup, and configuration. Controllers are kept minimal, delegating all business logic to services.
+- **SchoolSync.App** — Application layer. Implements all business logic, validation, and orchestration. Follows the Service Layer pattern and enforces separation of concerns.
+- **SchoolSync.Domain** — Domain layer. Defines core business entities, value objects, and repository/service interfaces. Models are persistence-agnostic and encapsulate business rules.
+- **SchoolSync.Infra** — Infrastructure layer. Implements data access (EF Core), repositories, and database migrations. All infrastructure dependencies are injected via interfaces.
+
+**Key Engineering Principles:**
+
+- **Clean Architecture**: Each layer has clear responsibilities and dependencies only point inward.
+- **Domain-Driven Design (DDD)**: The domain model is at the center, with rich validation and business rules.
+- **SOLID Principles**: Code is modular, extensible, and easy to test or refactor.
+- **DRY & KISS**: Controllers are thin, logic is centralized, and code is easy to follow.
+- **Separation of Concerns**: Validation, mapping, and persistence are all handled in their own layers.
+
+---
 
 ---
 
 ## Features
 
-- **Organization, School, User, Role, Subject, Lesson, Material, Enrollment, SchoolYear, Term management**
-- **File upload/download** for lesson materials and school/organization logos
-- **JWT-based authentication** and role-based authorization
-- **Entity validation** with strict separation for create/update logic
-- **AutoMapper** for DTO mapping
-- **Minimal, DRY controllers** with all business logic in services
-- **Extensible, testable architecture** (Domain-Driven Design, Clean Architecture)
+- **Comprehensive Academic Management**: Manage organizations, schools, users, roles, subjects, lessons, materials, enrollments, school years, and terms.
+- **Robust File Handling**: Upload/download lesson materials and school/organization logos. All files are stored as `byte[]` in the database, with dedicated endpoints for uploads.
+- **Secure Authentication & Authorization**: JWT-based authentication, role-based access control, and secure endpoints.
+- **Rich Validation**: All entities are validated on create/update, with clear separation of uniqueness and business rules.
+- **AutoMapper Integration**: DTOs and entities are mapped automatically, reducing boilerplate and improving maintainability.
+- **Minimal, DRY Controllers**: Controllers only handle HTTP concerns; all business logic is in services.
+- **Extensible & Testable**: The architecture supports easy addition of new features, and all layers are unit-testable.
 
 ---
 
-## Domain Model
+---
+
+## Domain Model & Relationships
 
 ### Core Entities
 
 - **Organization**: Top-level entity, can have multiple schools. Has a nullable logo (byte[]).
 - **School**: Belongs to an organization. Has users, subjects, school years, and a nullable logo (byte[]).
-- **User**: Represents students, teachers, admins. Linked to a school and a role. Has authentication credentials.
+- **User**: Represents students, teachers, admins. Linked to a school and a role. Has authentication credentials and role-based permissions.
 - **Role**: Defines user permissions (e.g., Student, Teacher, Admin).
 - **Subject**: Academic subject, linked to a school and a teacher.
 - **Lesson**: Linked to a subject. Can have multiple materials.
@@ -65,6 +79,8 @@ SchoolSync is a robust, modular, and extensible ASP.NET Core Web API designed fo
 - Lesson 1:M Material
 - SchoolYear 1:M Term
 - Enrollment M:1 Subject, M:1 Term
+
+---
 
 ---
 
@@ -93,7 +109,7 @@ SchoolSync is a robust, modular, and extensible ASP.NET Core Web API designed fo
 - JWT-based authentication
 - Endpoints for login and token issuance
 
-### Example Request: Create a School
+### Example: Creating a School (Realistic Request)
 
 ```json
 {
@@ -107,27 +123,35 @@ SchoolSync is a robust, modular, and extensible ASP.NET Core Web API designed fo
 
 ---
 
+---
+
 ## Validation & Business Logic
 
-- All entities are validated on create/update
-- Uniqueness and required fields are enforced (e.g., usernames, emails, subject codes)
-- Validation logic is separated for create and update operations (e.g., uniqueness only on create)
-- Cross-entity validation (e.g., teacher must belong to the same school as the subject)
+- **Centralized Validation**: All validation is performed in the service layer, not in controllers. This ensures consistency and reusability.
+- **Operation-Specific Rules**: Uniqueness and required fields are enforced on create, while update validation is more permissive.
+- **Cross-Entity Checks**: Business rules such as "teacher must belong to the same school as the subject" are enforced in services.
+- **Fail Fast**: Invalid data is rejected early, with clear error messages and parameter names.
+
+---
 
 ---
 
 ## File Uploads & Downloads
 
-- **Logos**: Uploaded after entity creation via `/organizations/{id}/upload-logo` or `/schools/{id}/upload-logo`
-- **Materials**: Uploaded via `/materials/upload` endpoint, linked to lessons
-- All files are stored as `byte[]` in the database; logos are nullable
+- **Logo Uploads**: Logos are uploaded after entity creation, ensuring the main entity can be created without a file. Endpoints: `/organizations/{id}/upload-logo`, `/schools/{id}/upload-logo`.
+- **Material Uploads**: Lesson materials (PDFs, videos, etc.) are uploaded via `/materials/upload` and linked to lessons. File validation and processing are handled in a dedicated handler.
+- **Database Storage**: All files are stored as `byte[]` in the database. Logos are nullable, supporting a two-step creation/upload process.
+
+---
 
 ---
 
 ## Authentication & Authorization
 
-- **JWT-based authentication**: Secure endpoints, issue tokens on login
-- **Role-based authorization**: Restrict access to endpoints based on user roles
+- **JWT Authentication**: All endpoints are secured with JWT tokens. Users authenticate and receive a token for subsequent requests.
+- **Role-Based Access Control**: Endpoints are protected by user roles (e.g., only admins can create schools or organizations).
+
+---
 
 ---
 
@@ -143,7 +167,7 @@ SchoolSync is a robust, modular, and extensible ASP.NET Core Web API designed fo
 1. Update the connection string in `SchoolSync.API/appsettings.Development.json` if needed:
 
    ```json
-      "DevDB": "Server=localhost;Database=SchoolSync;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=True;"
+   "DevDB": "Server=localhost;Database=SchoolSync;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=True;"
    ```
 
 ### Database Setup
@@ -152,9 +176,9 @@ SchoolSync is a robust, modular, and extensible ASP.NET Core Web API designed fo
 2. Run the following commands:
 
    ```powershell
-      dotnet tool install --global dotnet-ef # (if not already installed)
-      dotnet ef migrations add InitialCreate --project SchoolSync.Infra --startup-project SchoolSync.API
-      dotnet ef database update --project SchoolSync.Infra --startup-project SchoolSync.API
+   dotnet tool install --global dotnet-ef # (if not already installed)
+   dotnet ef migrations add InitialCreate --project SchoolSync.Infra --startup-project SchoolSync.API
+   dotnet ef database update --project SchoolSync.Infra --startup-project SchoolSync.API
    ```
 
 ### Running the API
@@ -163,29 +187,37 @@ SchoolSync is a robust, modular, and extensible ASP.NET Core Web API designed fo
 2. Run the API:
 
    ```powershell
-      dotnet run --project SchoolSync.API
+   dotnet run --project SchoolSync.API
    ```
 
 3. The API will be available at `https://localhost:5001` or `http://localhost:5000` by default.
 
 ---
 
+---
+
 ## Development & Architecture
 
-- **Clean Architecture**: Separation of concerns between API, application, domain, and infrastructure layers
-- **AutoMapper**: Used for mapping between DTOs and entities
-- **Minimal Controllers**: All business logic is in services, controllers are thin
-- **Validation**: All validation is in services, not controllers
-- **Extensibility**: Add new entities/services by following the existing patterns
+- **Clean Architecture**: Each layer has a single responsibility and clear boundaries. Dependencies always point inward.
+- **AutoMapper**: Used for mapping between DTOs and entities, reducing boilerplate and improving maintainability.
+- **Minimal Controllers**: Controllers are thin and only handle HTTP concerns. All business logic, validation, and orchestration are in services.
+- **Centralized Validation**: All validation is performed in the service layer, ensuring consistency and testability.
+- **Extensibility**: New entities, services, or features can be added by following the established patterns and interfaces.
+- **Testability**: All layers are unit-testable, and business logic is decoupled from infrastructure.
 
 ---
 
-## Troubleshooting
+---
 
-- **EF Core Include Errors**: Only use `.Include()` for navigation properties, not scalar fields like `Logo`
-- **Validation Errors**: Check that all required fields are provided in your requests
-- **Dependency Injection**: Ensure all services are registered in `ServiceCollectionExtensions`
-- **Migrations**: Always use `SchoolSync.API` as the startup project for migrations
+## Troubleshooting & Best Practices
+
+- **EF Core Include Errors**: Only use `.Include()` for navigation properties, not scalar fields like `Logo`.
+- **Validation Errors**: Ensure all required fields are provided in your requests. Error messages are descriptive and parameterized.
+- **Dependency Injection**: All services must be registered in `ServiceCollectionExtensions` for proper resolution.
+- **Migrations**: Always use `SchoolSync.API` as the startup project for migrations to ensure correct context and configuration.
+- **Separation of Concerns**: Never put business logic in controllers or repositories—always use services.
+
+---
 
 ---
 
