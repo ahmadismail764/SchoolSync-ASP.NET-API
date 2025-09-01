@@ -8,5 +8,4 @@ public class EnrollmentDto
     public int SchoolYearId { get; set; }
     public int TermId { get; set; }
     public int SubjectId { get; set; }
-    public bool IsActive { get; set; }
 }

@@ -7,8 +7,8 @@ namespace SchoolSync.Infra.Repositories;
 public class MaterialRepo(DBContext context) : GenericRepo<Material>(context), IMaterialRepo
 {
     public async Task<IEnumerable<Material>> GetByLessonIdAsync(int lessonId)
-        => await dbSet.Where(m => m.LessonId == lessonId).OrderByDescending(m => m.UploadDate).ToListAsync();
+        => await dbSet.Where(m => m.LessonId == lessonId && !m.IsDeleted).OrderByDescending(m => m.UploadDate).ToListAsync();
 
     public async Task<Material?> GetByFileNameAsync(string FileName)
-        => await dbSet.FirstOrDefaultAsync(m => m.FileName == FileName);
+        => await dbSet.FirstOrDefaultAsync(m => m.FileName == FileName && !m.IsDeleted);
 }

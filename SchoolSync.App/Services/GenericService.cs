@@ -55,6 +55,13 @@ public class GenericService<T>(IGenericRepo<T> repo) : IGenericService<T> where 
     {
         await _repo.SaveChangesAsync();
     }
+
+    // Admin method - get including deleted records
+    public async Task<IEnumerable<T>> GetAllIncludingDeletedAsync()
+    {
+        return await _repo.GetAllIncludingDeletedAsync();
+    }
+
     // Validation function for use by different methods
     // To be overriden by every derived service
     public virtual Task ValidateCreateAsync(T entity)

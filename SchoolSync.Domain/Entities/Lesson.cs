@@ -6,6 +6,7 @@ public class Lesson
     public string Title { get; set; } = string.Empty;
     public string? Description { get; set; }
     public int SubjectId { get; set; }
+    public bool IsDeleted { get; set; } = false;
     public Subject Subject { get; set; } = null!;
     public List<Material> Materials { get; set; } = [];
 }

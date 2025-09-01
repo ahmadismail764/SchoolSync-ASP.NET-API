@@ -8,5 +8,4 @@ public class SubjectDto
     public int Credits { get; set; }
     public int SchoolId { get; set; }
     public int TeacherId { get; set; }
-    public bool IsActive { get; set; }
 }

@@ -11,6 +11,7 @@ public class User
     public string Email { get; set; } = string.Empty;
     public string? PhoneNumber { get; set; }
     public bool IsActive { get; set; } = true;
+    public bool IsDeleted { get; set; } = false;
 
     public int RoleId { get; set; } = 1;
     public int SchoolId { get; set; }

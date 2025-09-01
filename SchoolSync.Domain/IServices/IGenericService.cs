@@ -15,4 +15,5 @@ public interface IGenericService<T> where T : class
     Task ValidateCreateAsync(T entity);
     Task ValidateUpdateAsync(T entity);
     Task SaveChangesAsync();
+    Task<IEnumerable<T>> GetAllIncludingDeletedAsync(); // Admin method
 }

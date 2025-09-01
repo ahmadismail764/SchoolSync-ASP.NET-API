@@ -12,5 +12,4 @@ public class CreateTermDto
     public DateTime EndDate { get; set; }
     [Required]
     public int SchoolYearId { get; set; }
-    public bool IsActive { get; set; } = true;
 }

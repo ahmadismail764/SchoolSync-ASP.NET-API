@@ -40,8 +40,18 @@ internal class DBSeeder(DBContext context) : IDBSeeder
             var subjects = await Subjects.ToListAsync();
             var lessons = new List<Lesson>
             {
-                new() { Title = "Lesson 1", Description = "Intro Lesson", SubjectId = subjects[0].Id },
-                new() { Title = "Lesson 2", Description = "Second Lesson", SubjectId = subjects[0].Id }
+                new() {
+                    Title = "Lesson 1",
+                    Description = "Intro Lesson",
+                    SubjectId = subjects[0].Id,
+                    IsDeleted = false
+                },
+                new() {
+                    Title = "Lesson 2",
+                    Description = "Second Lesson",
+                    SubjectId = subjects[0].Id,
+                    IsDeleted = false
+                }
             };
             await context.Lessons.AddRangeAsync(lessons);
             await context.SaveChangesAsync();
@@ -56,22 +66,35 @@ internal class DBSeeder(DBContext context) : IDBSeeder
             var lesson = await context.Lessons.FirstOrDefaultAsync();
             if (lesson != null)
             {
-                var pdfPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "SchoolSync.Infra", "SeedFiles", "AhmadIsmail-Resume.pdf");
-                if (File.Exists(pdfPath))
+                // Try multiple path resolutions for PDF
+                var pdfPaths = new[]
                 {
-                    var pdfBytes = await File.ReadAllBytesAsync(pdfPath);
-                    var material = new Material
+                    Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SeedFiles", "AhmadIsmail-Resume.pdf"),
+                    Path.Combine(Directory.GetCurrentDirectory(), "SeedFiles", "AhmadIsmail-Resume.pdf"),
+                    Path.Combine(Directory.GetCurrentDirectory(), "SchoolSync.Infra", "SeedFiles", "AhmadIsmail-Resume.pdf"),
+                    Path.Combine(Directory.GetCurrentDirectory(), "..", "SchoolSync.Infra", "SeedFiles", "AhmadIsmail-Resume.pdf")
+                };
+
+                foreach (var pdfPath in pdfPaths)
+                {
+                    if (File.Exists(pdfPath))
                     {
-                        FileName = "AhmadIsmail-Resume.pdf",
-                        ContentType = "application/pdf",
-                        FileType = "pdf",
-                        FileSize = pdfBytes.Length,
-                        FileData = pdfBytes,
-                        UploadDate = DateTime.UtcNow,
-                        Description = "Dummy PDF for seeding",
-                        LessonId = lesson.Id
-                    };
-                    await context.Materials.AddAsync(material);
+                        var pdfBytes = await File.ReadAllBytesAsync(pdfPath);
+                        var material = new Material
+                        {
+                            FileName = "AhmadIsmail-Resume.pdf",
+                            ContentType = "application/pdf",
+                            FileType = "pdf",
+                            FileSize = pdfBytes.Length,
+                            FileData = pdfBytes,
+                            UploadDate = DateTime.UtcNow,
+                            Description = "Dummy PDF for seeding",
+                            LessonId = lesson.Id,
+                            IsDeleted = false
+                        };
+                        await context.Materials.AddAsync(material);
+                        break; // Exit loop after finding and adding first valid file
+                    }
                 }
             }
             await context.SaveChangesAsync();
@@ -98,8 +121,22 @@ internal class DBSeeder(DBContext context) : IDBSeeder
         {
             var orgs = new List<Organization>
             {
-                new() { Name = "Greenfield Academy Trust", Address = "101 Green St, Cityville", PhoneNumber = "+1-555-1000", Email = "info@greenfield.org" },
-                new() { Name = "Blue River Schools", Address = "202 Blue River Rd, Townsville", PhoneNumber = "+1-555-2000", Email = "contact@blueriver.edu" }
+                new() {
+                    Name = "Greenfield Academy Trust",
+                    Address = "101 Green St, Cityville",
+                    PhoneNumber = "+1-555-1000",
+                    Email = "info@greenfield.org",
+                    IsActive = true,
+                    IsDeleted = false
+                },
+                new() {
+                    Name = "Blue River Schools",
+                    Address = "202 Blue River Rd, Townsville",
+                    PhoneNumber = "+1-555-2000",
+                    Email = "contact@blueriver.edu",
+                    IsActive = true,
+                    IsDeleted = false
+                }
             };
             await Organizations.AddRangeAsync(orgs);
             await context.SaveChangesAsync();
@@ -111,13 +148,58 @@ internal class DBSeeder(DBContext context) : IDBSeeder
         if (!await Schools.AnyAsync())
         {
             var orgs = await Organizations.ToListAsync();
-            byte[] logoBytes;
-            var logoPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "SchoolSync.Infra", "SeedFiles", "image.png");
-            logoBytes = await File.ReadAllBytesAsync(logoPath);
+
+            // Try to load logo, fallback to empty array if file doesn't exist
+            byte[] logoBytes = Array.Empty<byte>();
+
+            // Try multiple path resolutions for logo
+            var logoPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SeedFiles", "image.png");
+            var alternatePaths = new[]
+            {
+                Path.Combine(Directory.GetCurrentDirectory(), "SeedFiles", "image.png"),
+                Path.Combine(Directory.GetCurrentDirectory(), "SchoolSync.Infra", "SeedFiles", "image.png"),
+                Path.Combine(Directory.GetCurrentDirectory(), "..", "SchoolSync.Infra", "SeedFiles", "image.png")
+            };
+
+            // Try main path first, then alternatives
+            if (File.Exists(logoPath))
+            {
+                logoBytes = await File.ReadAllBytesAsync(logoPath);
+            }
+            else
+            {
+                foreach (var altPath in alternatePaths)
+                {
+                    if (File.Exists(altPath))
+                    {
+                        logoBytes = await File.ReadAllBytesAsync(altPath);
+                        break;
+                    }
+                }
+            }
+
             var schools = new List<School>
             {
-                new() { Name = "Greenfield High", Address = "1 School Lane", PhoneNumber = "+1-555-1100", Email = "admin@greenfieldhigh.edu", OrganizationId = orgs[0].Id, Logo = logoBytes },
-                new() { Name = "Blue River Primary", Address = "2 River Rd", PhoneNumber = "+1-555-2100", Email = "office@blueriverprimary.edu", OrganizationId = orgs[1].Id, Logo = logoBytes }
+                new() {
+                    Name = "Greenfield High",
+                    Address = "1 School Lane",
+                    PhoneNumber = "+1-555-1100",
+                    Email = "admin@greenfieldhigh.edu",
+                    OrganizationId = orgs[0].Id,
+                    Logo = logoBytes,
+                    IsActive = true,
+                    IsDeleted = false
+                },
+                new() {
+                    Name = "Blue River Primary",
+                    Address = "2 River Rd",
+                    PhoneNumber = "+1-555-2100",
+                    Email = "office@blueriverprimary.edu",
+                    OrganizationId = orgs[1].Id,
+                    Logo = logoBytes,
+                    IsActive = true,
+                    IsDeleted = false
+                }
             };
             await Schools.AddRangeAsync(schools);
             await context.SaveChangesAsync();
@@ -128,23 +210,94 @@ internal class DBSeeder(DBContext context) : IDBSeeder
     {
         if (!await Users.AnyAsync())
         {
-            var schools = await Schools.ToListAsync();
+            // Get schools and roles from database to ensure we have proper IDs
+            var schools = await Schools.Where(s => !s.IsDeleted).OrderBy(s => s.Id).ToListAsync();
             var roles = await Roles.ToListAsync();
+
+            if (!schools.Any())
+            {
+                throw new InvalidOperationException("No schools found in database. Schools must be seeded before users.");
+            }
+
             var teacherRole = roles.First(r => r.Name == "Teacher");
             var studentRole = roles.First(r => r.Name == "Student");
-            // Temporary simple hash - will be replaced by proper password hasher
-            var password = "AQAAAAEAACcQAAAAEKPl/JcSoVJx6aGz6gqy9cIxo1s2XbJ7c8N+kF9LVgM1HhQ4e2l7p6D3fN8KXxR9Tw=="; // Hash of "Password123!"
+
+            // Microsoft Identity compatible hash for "Password123!" 
+            var password = "AQAAAAEAACcQAAAAEKXdFh8HFvTdkHQC3rJz5jXYCgKs2LmOZftLkl2F9qRAFg5VQJ7Z3sF8BaFKL9TqxA==";
             var users = new List<User>
             {
                 // Teachers
-                new() { FullName = "Alice Smith", Email = "alice.smith@greenfieldhigh.edu", Username = "asmith", SchoolId = schools[0].Id, RoleId = teacherRole.Id, PasswordHash = password },
-                new() { FullName = "Bob Johnson", Email = "bob.johnson@greenfieldhigh.edu", Username = "bjohnson", SchoolId = schools[0].Id, RoleId = teacherRole.Id, PasswordHash = password },
-                new() { FullName = "Carol White", Email = "carol.white@blueriverprimary.edu", Username = "cwhite", SchoolId = schools[1].Id, RoleId = teacherRole.Id, PasswordHash = password },
+                new() {
+                    FullName = "Alice Smith",
+                    Email = "alice.smith@greenfieldhigh.edu",
+                    Username = "asmith",
+                    SchoolId = schools[0].Id, // This should now be a valid ID
+                    RoleId = teacherRole.Id,
+                    PasswordHash = password,
+                    IsActive = true,
+                    IsDeleted = false
+                },
+                new() {
+                    FullName = "Bob Johnson",
+                    Email = "bob.johnson@greenfieldhigh.edu",
+                    Username = "bjohnson",
+                    SchoolId = schools[0].Id, // This should now be a valid ID
+                    RoleId = teacherRole.Id,
+                    PasswordHash = password,
+                    IsActive = true,
+                    IsDeleted = false
+                },
+                new() {
+                    FullName = "Carol White",
+                    Email = "carol.white@blueriverprimary.edu",
+                    Username = "cwhite",
+                    SchoolId = schools[1].Id,
+                    RoleId = teacherRole.Id,
+                    PasswordHash = password,
+                    IsActive = true,
+                    IsDeleted = false
+                },
                 // Students
-                new() { FullName = "David Lee", Email = "david.lee@greenfieldhigh.edu", Username = "dlee", SchoolId = schools[0].Id, RoleId = studentRole.Id, PasswordHash = password },
-                new() { FullName = "Eva Brown", Email = "eva.brown@greenfieldhigh.edu", Username = "ebrown", SchoolId = schools[0].Id, RoleId = studentRole.Id, PasswordHash = password },
-                new() { FullName = "Frank Green", Email = "frank.green@blueriverprimary.edu", Username = "fgreen", SchoolId = schools[1].Id, RoleId = studentRole.Id, PasswordHash = password },
-                new() { FullName = "Grace Kim", Email = "grace.kim@blueriverprimary.edu", Username = "gkim", SchoolId = schools[1].Id, RoleId = studentRole.Id, PasswordHash = password }
+                new() {
+                    FullName = "David Lee",
+                    Email = "david.lee@greenfieldhigh.edu",
+                    Username = "dlee",
+                    SchoolId = schools[0].Id,
+                    RoleId = studentRole.Id,
+                    PasswordHash = password,
+                    IsActive = true,
+                    IsDeleted = false
+                },
+                new() {
+                    FullName = "Eva Brown",
+                    Email = "eva.brown@greenfieldhigh.edu",
+                    Username = "ebrown",
+                    SchoolId = schools[0].Id,
+                    RoleId = studentRole.Id,
+                    PasswordHash = password,
+                    IsActive = true,
+                    IsDeleted = false
+                },
+                new() {
+                    FullName = "Frank Green",
+                    Email = "frank.green@blueriverprimary.edu",
+                    Username = "fgreen",
+                    SchoolId = schools[1].Id,
+                    RoleId = studentRole.Id,
+                    PasswordHash = password,
+                    IsActive = true,
+                    IsDeleted = false
+                },
+                new() {
+                    FullName = "Grace Kim",
+                    Email = "grace.kim@blueriverprimary.edu",
+                    Username = "gkim",
+                    SchoolId = schools[1].Id,
+                    RoleId = studentRole.Id,
+                    PasswordHash = password,
+                    IsActive = true,
+                    IsDeleted = false
+                }
             };
             await Users.AddRangeAsync(users);
             await context.SaveChangesAsync();
@@ -177,9 +330,33 @@ internal class DBSeeder(DBContext context) : IDBSeeder
             var teachers = await Users.Where(u => u.Role.Name == "Teacher").ToListAsync();
             var subjects = new List<Subject>
             {
-                new() { Name = "Mathematics", Code = "MATH101", Credits = 3, SchoolId = schools[0].Id, TeacherId = teachers[0].Id },
-                new() { Name = "English", Code = "ENG101", Credits = 2, SchoolId = schools[0].Id, TeacherId = teachers[1].Id },
-                new() { Name = "Science", Code = "SCI101", Credits = 3, SchoolId = schools[1].Id, TeacherId = teachers[2].Id }
+                new() {
+                    Name = "Mathematics",
+                    Code = "MATH101",
+                    Credits = 3,
+                    SchoolId = schools[0].Id,
+                    TeacherId = teachers[0].Id,
+                    IsActive = true,
+                    IsDeleted = false
+                },
+                new() {
+                    Name = "English",
+                    Code = "ENG101",
+                    Credits = 2,
+                    SchoolId = schools[0].Id,
+                    TeacherId = teachers[1].Id,
+                    IsActive = true,
+                    IsDeleted = false
+                },
+                new() {
+                    Name = "Science",
+                    Code = "SCI101",
+                    Credits = 3,
+                    SchoolId = schools[1].Id,
+                    TeacherId = teachers[2].Id,
+                    IsActive = true,
+                    IsDeleted = false
+                }
             };
             await Subjects.AddRangeAsync(subjects);
             await context.SaveChangesAsync();
@@ -193,8 +370,22 @@ internal class DBSeeder(DBContext context) : IDBSeeder
             var schools = await Schools.ToListAsync();
             var years = new List<SchoolYear>
             {
-                new() { Year = 2024, StartDate = new DateTime(2024, 8, 15), EndDate = new DateTime(2025, 6, 15), SchoolId = schools[0].Id },
-                new() { Year = 2024, StartDate = new DateTime(2024, 8, 15), EndDate = new DateTime(2025, 6, 15), SchoolId = schools[1].Id }
+                new() {
+                    Year = 2024,
+                    StartDate = new DateTime(2024, 8, 15),
+                    EndDate = new DateTime(2025, 6, 15),
+                    SchoolId = schools[0].Id,
+                    IsActive = true,
+                    IsDeleted = false
+                },
+                new() {
+                    Year = 2024,
+                    StartDate = new DateTime(2024, 8, 15),
+                    EndDate = new DateTime(2025, 6, 15),
+                    SchoolId = schools[1].Id,
+                    IsActive = true,
+                    IsDeleted = false
+                }
             };
             await SchoolYears.AddRangeAsync(years);
             await context.SaveChangesAsync();
@@ -208,10 +399,38 @@ internal class DBSeeder(DBContext context) : IDBSeeder
             var years = await SchoolYears.ToListAsync();
             var terms = new List<Term>
             {
-                new() { Name = "Fall 2024", StartDate = new DateTime(2024, 8, 15), EndDate = new DateTime(2024, 12, 20), SchoolYearId = years[0].Id },
-                new() { Name = "Spring 2025", StartDate = new DateTime(2025, 1, 15), EndDate = new DateTime(2025, 6, 15), SchoolYearId = years[0].Id },
-                new() { Name = "Fall 2024", StartDate = new DateTime(2024, 8, 15), EndDate = new DateTime(2024, 12, 20), SchoolYearId = years[1].Id },
-                new() { Name = "Spring 2025", StartDate = new DateTime(2025, 1, 15), EndDate = new DateTime(2025, 6, 15), SchoolYearId = years[1].Id }
+                new() {
+                    Name = "Fall 2024",
+                    StartDate = new DateTime(2024, 8, 15),
+                    EndDate = new DateTime(2024, 12, 20),
+                    SchoolYearId = years[0].Id,
+                    IsActive = true,
+                    IsDeleted = false
+                },
+                new() {
+                    Name = "Spring 2025",
+                    StartDate = new DateTime(2025, 1, 15),
+                    EndDate = new DateTime(2025, 6, 15),
+                    SchoolYearId = years[0].Id,
+                    IsActive = true,
+                    IsDeleted = false
+                },
+                new() {
+                    Name = "Fall 2024",
+                    StartDate = new DateTime(2024, 8, 15),
+                    EndDate = new DateTime(2024, 12, 20),
+                    SchoolYearId = years[1].Id,
+                    IsActive = true,
+                    IsDeleted = false
+                },
+                new() {
+                    Name = "Spring 2025",
+                    StartDate = new DateTime(2025, 1, 15),
+                    EndDate = new DateTime(2025, 6, 15),
+                    SchoolYearId = years[1].Id,
+                    IsActive = true,
+                    IsDeleted = false
+                }
             };
             await Terms.AddRangeAsync(terms);
             await context.SaveChangesAsync();
@@ -224,23 +443,35 @@ internal class DBSeeder(DBContext context) : IDBSeeder
         {
             var students = await Users.Where(u => u.Role.Name == "Student").ToListAsync();
             var subjects = await Subjects.ToListAsync();
-            var terms = await Terms.ToListAsync();
+            var terms = await Terms.Include(t => t.SchoolYear).ToListAsync();
             var enrollments = new List<Enrollment>();
+
             foreach (var student in students)
             {
-                // Enroll each student in all subjects of their school for the first term
+                // Enroll each student in subjects of their school for the current term
                 var studentSubjects = subjects.Where(s => s.SchoolId == student.SchoolId).ToList();
-                var firstTerm = terms.First(t => t.SchoolYear.SchoolId == student.SchoolId);
-                foreach (var subject in studentSubjects)
+                var studentTerms = terms.Where(t => t.SchoolYear.SchoolId == student.SchoolId).ToList();
+
+                if (studentTerms.Any() && studentSubjects.Any())
                 {
-                    enrollments.Add(new Enrollment
+                    // Use the first (current) term for the student's school
+                    var currentTerm = studentTerms.OrderBy(t => t.StartDate).First();
+
+                    foreach (var subject in studentSubjects)
                     {
-                        StudentId = student.Id,
-                        SubjectId = subject.Id,
-                        TermId = firstTerm.Id,
-                        EnrollmentDate = DateTime.UtcNow,
-                        IsActive = true
-                    });
+                        // Set enrollment date to be within the term period
+                        var enrollmentDate = currentTerm.StartDate.AddDays(7); // Enroll 1 week after term starts
+
+                        enrollments.Add(new Enrollment
+                        {
+                            StudentId = student.Id,
+                            SubjectId = subject.Id,
+                            TermId = currentTerm.Id,
+                            EnrollmentDate = enrollmentDate,
+                            IsActive = true,
+                            IsDeleted = false
+                        });
+                    }
                 }
             }
             await Enrollments.AddRangeAsync(enrollments);

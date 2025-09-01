@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using SchoolSync.App.DTOs.User;
 using SchoolSync.Domain.Entities;
 using SchoolSync.Domain.IServices;
+using System.Security.Claims;
 
 namespace SchoolSync.API.Controllers;
 
@@ -18,29 +19,6 @@ public class UserController
     private readonly IUserService _service = service;
     private readonly IMapper _mapper = mapper;
     private readonly IPasswordHasher<User> _passwordHasher = passwordHasher;
-
-    [AllowAnonymous]
-    [HttpPost]
-    public async Task<ActionResult<UserDto>> Register([FromBody] CreateUserDto dto)
-    {
-        try
-        {
-            var entity = _mapper.Map<User>(dto);
-            if (string.IsNullOrWhiteSpace(dto.Password) || !dto.Password.All(char.IsLetterOrDigit))
-                return BadRequest("Password must be alphanumeric.");
-            entity.PasswordHash = _passwordHasher.HashPassword(entity, dto.Password);
-            var created = await _service.CreateAsync(entity);
-            return CreatedAtAction(nameof(GetById), new { id = created.Id }, _mapper.Map<UserDto>(created));
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(ex.Message);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"An error occurred: {ex.Message}");
-        }
-    }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<UserDto>> GetById(int id)
@@ -135,6 +113,18 @@ public class UserController
     {
         var entity = await _service.GetByIdAsync(id);
         if (entity == null) return NotFound();
+
+        // Check if the user is deleting themselves
+        var currentUserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (int.TryParse(currentUserIdClaim, out int currentUserId) && currentUserId == id)
+        {
+            // User is deleting themselves - proceed with deletion
+            await _service.DeleteAsync(id);
+            // Return a special response indicating the user should be logged out
+            return Ok(new { message = "Account deleted successfully. Please log out.", shouldLogout = true });
+        }
+
+        // Different user being deleted by admin
         await _service.DeleteAsync(id);
         return NoContent();
     }

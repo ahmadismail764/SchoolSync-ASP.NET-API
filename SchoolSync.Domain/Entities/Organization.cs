@@ -11,5 +11,6 @@ public class Organization
     public byte[]? Logo { get; set; }
     // The following property is for soft delete
     public bool IsActive { get; set; } = true;
+    public bool IsDeleted { get; set; } = false;
     public List<School> Schools { get; set; } = new();
 }

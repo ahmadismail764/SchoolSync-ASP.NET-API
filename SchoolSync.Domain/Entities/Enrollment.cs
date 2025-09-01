@@ -9,6 +9,7 @@ public class Enrollment
     public DateTime EnrollmentDate { get; set; }
     public decimal? Grade { get; set; }
     public bool IsActive { get; set; } = true;
+    public bool IsDeleted { get; set; } = false;
 
     public User Student { get; set; } = null!;
     public Subject Subject { get; set; } = null!;

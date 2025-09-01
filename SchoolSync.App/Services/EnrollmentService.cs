@@ -19,14 +19,47 @@ public class EnrollmentService(IEnrollmentRepo enrollmentRepo, IUserRepo userRep
 
     public override async Task ValidateCreateAsync(Enrollment entity)
     {
-        // Uniqueness: a student can only be enrolled once per subject per term
+        // 1. Validate Student exists and is a student
+        var student = await _userRepo.GetAsync(entity.StudentId);
+        if (student == null)
+            throw new ArgumentException("Student not found.");
+        if (student.RoleId != 2) // Assuming 2 is Student role
+            throw new ArgumentException("User is not a student.");
+
+        // 2. Validate Subject exists
+        var subject = await _subjectRepo.GetAsync(entity.SubjectId);
+        if (subject == null)
+            throw new ArgumentException("Subject not found.");
+
+        // 3. Validate Term exists
+        var term = await _termRepo.GetAsync(entity.TermId);
+        if (term == null)
+            throw new ArgumentException("Term not found.");
+
+        // 4. Validate Student and Subject belong to the same school
+        if (student.SchoolId != subject.SchoolId)
+            throw new ArgumentException("Student and subject must belong to the same school.");
+
+        // 5. Validate Term belongs to the student's school
+        var schoolYear = await _schoolYearRepo.GetAsync(term.SchoolYearId);
+        if (schoolYear == null || schoolYear.SchoolId != student.SchoolId)
+            throw new ArgumentException("Term must belong to the student's school.");
+
+        // 6. Validate enrollment date is within term dates
+        if (entity.EnrollmentDate < term.StartDate || entity.EnrollmentDate > term.EndDate)
+            throw new ArgumentException("Enrollment date must be within the term period.");
+
+        // 7. Uniqueness: a student can only be enrolled once per subject per term
         if (await enrollmentRepo.ExistsAsync(e => e.StudentId == entity.StudentId && e.SubjectId == entity.SubjectId && e.TermId == entity.TermId))
             throw new ArgumentException("This student is already enrolled in this subject for this term.");
     }
 
     public override async Task ValidateUpdateAsync(Enrollment entity)
     {
-        // Uniqueness: a student can only be enrolled once per subject per term (exclude self)
+        // Apply same validations as create for data integrity
+        await ValidateCreateAsync(entity);
+
+        // Additional check: Uniqueness excluding self
         if (await enrollmentRepo.ExistsAsync(e => e.StudentId == entity.StudentId && e.SubjectId == entity.SubjectId && e.TermId == entity.TermId && e.Id != entity.Id))
             throw new ArgumentException("This student is already enrolled in this subject for this term.");
     }

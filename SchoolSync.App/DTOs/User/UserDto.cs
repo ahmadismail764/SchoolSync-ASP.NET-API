@@ -9,6 +9,5 @@ public class UserDto
     public string Username { get; set; } = string.Empty;
     public int SchoolId { get; set; }
     public int RoleId { get; set; }
-    public bool IsActive { get; set; }
 
 }

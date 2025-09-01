@@ -13,6 +13,7 @@ public class Material
 
     // Relationships
     public int LessonId { get; set; }
+    public bool IsDeleted { get; set; } = false;
     public Lesson Lesson { get; set; } = null!;
 
 }

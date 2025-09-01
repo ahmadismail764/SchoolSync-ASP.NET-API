@@ -9,6 +9,7 @@ public class Term
     public int SchoolYearId { get; set; }
 
     public bool IsActive { get; set; } = true;
+    public bool IsDeleted { get; set; } = false;
     public SchoolYear SchoolYear { get; set; } = null!;
     public List<Enrollment> Enrollments { get; set; } = new();
 }

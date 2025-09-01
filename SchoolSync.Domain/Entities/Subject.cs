@@ -9,6 +9,7 @@ public class Subject
     public int SchoolId { get; set; }
     public int TeacherId { get; set; }
     public bool IsActive { get; set; } = true;
+    public bool IsDeleted { get; set; } = false;
 
     public User Teacher { get; set; } = null!;
     public School School { get; set; } = null!;
