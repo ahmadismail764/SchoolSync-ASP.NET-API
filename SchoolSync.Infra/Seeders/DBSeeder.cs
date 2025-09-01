@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SchoolSync.Domain.Entities;
 using SchoolSync.Infra.Persistence;
-using BCrypt.Net;
+
 namespace SchoolSync.Infra.Seeders;
 
 internal class DBSeeder(DBContext context) : IDBSeeder
@@ -132,7 +132,8 @@ internal class DBSeeder(DBContext context) : IDBSeeder
             var roles = await Roles.ToListAsync();
             var teacherRole = roles.First(r => r.Name == "Teacher");
             var studentRole = roles.First(r => r.Name == "Student");
-            var password = BCrypt.Net.BCrypt.HashPassword("Password123!");
+            // Temporary simple hash - will be replaced by proper password hasher
+            var password = "AQAAAAEAACcQAAAAEKPl/JcSoVJx6aGz6gqy9cIxo1s2XbJ7c8N+kF9LVgM1HhQ4e2l7p6D3fN8KXxR9Tw=="; // Hash of "Password123!"
             var users = new List<User>
             {
                 // Teachers

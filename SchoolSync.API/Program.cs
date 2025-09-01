@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using SchoolSync.App.Extensions;
+using SchoolSync.Domain.Entities;
 using SchoolSync.Infra.Extensions;
 using System.Reflection;
 using System.Text;
@@ -49,6 +51,8 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddInfrastructureServices(builder.Configuration);
 // Application-Use Case layer
 builder.Services.AddAppServices();
+// Add password hasher
+builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly(), typeof(SchoolSync.App.MappingProfiles.UserProfile).Assembly);
 
 var app = builder.Build();

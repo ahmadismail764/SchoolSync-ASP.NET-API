@@ -1,20 +1,23 @@
 
 using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using SchoolSync.App.DTOs.User;
 using SchoolSync.Domain.Entities;
 using SchoolSync.Domain.IServices;
-using SchoolSync.App.DTOs.User;
+
 namespace SchoolSync.API.Controllers;
 
 [ApiController]
 [Route("api/users")]
 [Authorize(Roles = "2")]
 public class UserController
-(IUserService service, IMapper mapper) : ControllerBase
+(IUserService service, IMapper mapper, IPasswordHasher<User> passwordHasher) : ControllerBase
 {
     private readonly IUserService _service = service;
     private readonly IMapper _mapper = mapper;
+    private readonly IPasswordHasher<User> _passwordHasher = passwordHasher;
 
     [AllowAnonymous]
     [HttpPost]
@@ -25,7 +28,7 @@ public class UserController
             var entity = _mapper.Map<User>(dto);
             if (string.IsNullOrWhiteSpace(dto.Password) || !dto.Password.All(char.IsLetterOrDigit))
                 return BadRequest("Password must be alphanumeric.");
-            entity.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+            entity.PasswordHash = _passwordHasher.HashPassword(entity, dto.Password);
             var created = await _service.CreateAsync(entity);
             return CreatedAtAction(nameof(GetById), new { id = created.Id }, _mapper.Map<UserDto>(created));
         }

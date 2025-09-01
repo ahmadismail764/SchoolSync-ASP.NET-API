@@ -1,10 +1,11 @@
+using Microsoft.AspNetCore.Identity;
 using SchoolSync.Domain.Entities;
 using SchoolSync.Domain.IRepositories;
 using SchoolSync.Domain.IServices;
 
 namespace SchoolSync.App.Services;
 
-public class UserService(IUserRepo userRepo)
+public class UserService(IUserRepo userRepo, IPasswordHasher<User> passwordHasher)
     : GenericService<User>(userRepo), IUserService
 {
     public async Task<User?> GetByUsernameAsync(string username) => await userRepo.GetByUsernameAsync(username);
@@ -18,7 +19,8 @@ public class UserService(IUserRepo userRepo)
     {
         if (user == null || string.IsNullOrEmpty(user.PasswordHash))
             return false;
-        return await Task.FromResult(BCrypt.Net.BCrypt.Verify(password, user.PasswordHash));
+        var result = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password);
+        return await Task.FromResult(result == PasswordVerificationResult.Success);
     }
 
     public async Task<User?> AuthenticateAsync(string username, string password)
