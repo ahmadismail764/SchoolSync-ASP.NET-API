@@ -3,6 +3,7 @@
 
 .vscode/
 *.json
+*.sql
 
 # User-specific files
 *.rsuser
