@@ -7,4 +7,5 @@ public interface IUserRepo : IGenericRepo<User>
     Task<User?> GetByEmailAsync(string email);
     Task<IEnumerable<User>> GetByRoleAsync(int roleId);
     Task<IEnumerable<User>> GetBySchoolAsync(int schoolId);
+    Task<User?> GetWithRoleAsync(int id);
 }

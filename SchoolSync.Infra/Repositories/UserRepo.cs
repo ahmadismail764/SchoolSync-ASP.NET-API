@@ -25,4 +25,10 @@ public class UserRepo(DBContext context) : GenericRepo<User>(context), IUserRepo
     {
         return await GetRangeWhereAsync(u => u.SchoolId == schoolId);
     }
+
+    public async Task<User?> GetWithRoleAsync(int id)
+    {
+        var users = await GetRangeWhereAsync(u => u.Id == id);
+        return users.FirstOrDefault();
+    }
 }

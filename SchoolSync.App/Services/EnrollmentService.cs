@@ -1,7 +1,6 @@
 using SchoolSync.Domain.Entities;
 using SchoolSync.Domain.IRepositories;
 using SchoolSync.Domain.IServices;
-
 namespace SchoolSync.App.Services;
 
 public class EnrollmentService(IEnrollmentRepo enrollmentRepo, IUserRepo userRepo, ISubjectRepo subjectRepo, ITermRepo termRepo, ISchoolYearRepo schoolYearRepo)
@@ -16,25 +15,18 @@ public class EnrollmentService(IEnrollmentRepo enrollmentRepo, IUserRepo userRep
     public async Task<IEnumerable<Enrollment>> GetBySubjectAsync(int subjectId) => await enrollmentRepo.GetBySubjectAsync(subjectId);
     public async Task<IEnumerable<Enrollment>> GetByTermAsync(int termId) => await enrollmentRepo.GetByTermAsync(termId);
     public async Task<Enrollment?> GetByCompositeKeyAsync(int studentId, int subjectId, int termId) => await enrollmentRepo.GetByCompositeKeyAsync(studentId, subjectId, termId);
-
     public override async Task ValidateCreateAsync(Enrollment entity)
     {
         // 1. Validate Student exists and is a student
-        var student = await _userRepo.GetAsync(entity.StudentId);
-        if (student == null)
-            throw new ArgumentException("Student not found.");
-        if (student.RoleId != 2) // Assuming 2 is Student role
+        var student = await _userRepo.GetAsync(entity.StudentId) ?? throw new ArgumentException("Student not found.");
+        if (student.RoleId != 1) // Assuming 2 is Student role
             throw new ArgumentException("User is not a student.");
 
         // 2. Validate Subject exists
-        var subject = await _subjectRepo.GetAsync(entity.SubjectId);
-        if (subject == null)
-            throw new ArgumentException("Subject not found.");
+        var subject = await _subjectRepo.GetAsync(entity.SubjectId) ?? throw new ArgumentException("Subject not found.");
 
         // 3. Validate Term exists
-        var term = await _termRepo.GetAsync(entity.TermId);
-        if (term == null)
-            throw new ArgumentException("Term not found.");
+        var term = await _termRepo.GetAsync(entity.TermId) ?? throw new ArgumentException("Term not found.");
 
         // 4. Validate Student and Subject belong to the same school
         if (student.SchoolId != subject.SchoolId)
@@ -53,7 +45,6 @@ public class EnrollmentService(IEnrollmentRepo enrollmentRepo, IUserRepo userRep
         if (await enrollmentRepo.ExistsAsync(e => e.StudentId == entity.StudentId && e.SubjectId == entity.SubjectId && e.TermId == entity.TermId))
             throw new ArgumentException("This student is already enrolled in this subject for this term.");
     }
-
     public override async Task ValidateUpdateAsync(Enrollment entity)
     {
         // Apply same validations as create for data integrity

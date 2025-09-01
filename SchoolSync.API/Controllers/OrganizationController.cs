@@ -43,20 +43,9 @@ public class OrganizationController(IOrganizationService service, IMapper mapper
     [HttpPost]
     public async Task<ActionResult<OrganizationDto>> Create([FromBody] CreateOrganizationDto dto)
     {
-        try
-        {
-            var entity = _mapper.Map<Organization>(dto);
-            var created = await _service.CreateAsync(entity);
-            return CreatedAtAction(nameof(GetById), new { id = created.Id }, _mapper.Map<OrganizationDto>(created));
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(ex.Message);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"An error occurred: {ex.Message}");
-        }
+        var entity = _mapper.Map<Organization>(dto);
+        var created = await _service.CreateAsync(entity);
+        return CreatedAtAction(nameof(GetById), new { id = created.Id }, _mapper.Map<OrganizationDto>(created));
     }
 
     [HttpPut("{id}")]
@@ -66,19 +55,8 @@ public class OrganizationController(IOrganizationService service, IMapper mapper
         if (entity == null) return NotFound();
         if (dto.Name != null) entity.Name = dto.Name;
         if (dto.Address != null) entity.Address = dto.Address;
-        try
-        {
-            await _service.UpdateAsync(entity);
-            return Ok(_mapper.Map<OrganizationDto>(entity));
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(ex.Message);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"An error occurred: {ex.Message}");
-        }
+        await _service.UpdateAsync(entity);
+        return Ok(_mapper.Map<OrganizationDto>(entity));
     }
 
     [HttpDelete("{id}")]
@@ -95,36 +73,18 @@ public class OrganizationController(IOrganizationService service, IMapper mapper
     {
         var entity = new Organization();
         _mapper.Map(dto, entity);
-        try
-        {
-            var updated = await _service.UpdateRangeWhereAsync(
-                org => string.IsNullOrEmpty(nameContains) || org.Name.Contains(nameContains, StringComparison.OrdinalIgnoreCase),
-                entity
-            );
-            return Ok(_mapper.Map<IEnumerable<OrganizationDto>>(updated));
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(ex.Message);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"An error occurred: {ex.Message}");
-        }
+        var updated = await _service.UpdateRangeWhereAsync(
+            org => string.IsNullOrEmpty(nameContains) || org.Name.Contains(nameContains, StringComparison.OrdinalIgnoreCase),
+            entity
+        );
+        return Ok(_mapper.Map<IEnumerable<OrganizationDto>>(updated));
     }
 
     [HttpDelete("range")]
     public async Task<ActionResult<IEnumerable<OrganizationDto>>> DeleteRange([FromQuery] string? nameContains = null)
     {
-        try
-        {
-            var deleted = await _service.DeleteRangeWhereAsync(org => string.IsNullOrEmpty(nameContains) || org.Name.Contains(nameContains, StringComparison.OrdinalIgnoreCase));
-            return Ok(_mapper.Map<IEnumerable<OrganizationDto>>(deleted));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"An error occurred: {ex.Message}");
-        }
+        var deleted = await _service.DeleteRangeWhereAsync(org => string.IsNullOrEmpty(nameContains) || org.Name.Contains(nameContains, StringComparison.OrdinalIgnoreCase));
+        return Ok(_mapper.Map<IEnumerable<OrganizationDto>>(deleted));
     }
     [HttpPost("{id}/upload-logo")]
     [Consumes("multipart/form-data")]
