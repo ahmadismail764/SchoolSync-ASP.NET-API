@@ -25,10 +25,20 @@ public class SchoolService(ISchoolRepo schoolRepo, IOrganizationRepo organizatio
         if (org == null || !org.IsActive)
             throw new ArgumentException("Organization must exist and be active.");
 
-        // Uniqueness: Name must be unique per Organization
-        var existing = await _repo.GetRangeWhereAsync(x => x.Name == entity.Name && x.OrganizationId == entity.OrganizationId);
-        if (existing.Any())
+        // Uniqueness: Name already exists per Organization
+        if (await _repo.ExistsAsync(x => x.Name == entity.Name && x.OrganizationId == entity.OrganizationId))
             throw new ArgumentException("A school with this name already exists in the organization.", nameof(entity.Name));
+
+        // Uniqueness: Email already exists
+        if (await _repo.ExistsAsync(x => x.Email == entity.Email))
+            throw new ArgumentException("A school with this email already exists.", nameof(entity.Email));
+
+        // Uniqueness: Phone number already exists (if provided)
+        if (!string.IsNullOrWhiteSpace(entity.PhoneNumber))
+        {
+            if (await _repo.ExistsAsync(x => x.PhoneNumber == entity.PhoneNumber))
+                throw new ArgumentException("A school with this phone number already exists.", nameof(entity.PhoneNumber));
+        }
     }
 
     public override async Task ValidateUpdateAsync(School entity)
@@ -43,5 +53,20 @@ public class SchoolService(ISchoolRepo schoolRepo, IOrganizationRepo organizatio
         var org = await _organizationRepo.GetAsync(entity.OrganizationId);
         if (org == null || !org.IsActive)
             throw new ArgumentException("Organization must exist and be active.");
+
+        // Uniqueness: Name already exists per Organization (exclude self)
+        if (await _repo.ExistsAsync(x => x.Name == entity.Name && x.OrganizationId == entity.OrganizationId && x.Id != entity.Id))
+            throw new ArgumentException("A school with this name already exists in the organization.", nameof(entity.Name));
+
+        // Uniqueness: Email already exists (exclude self)
+        if (await _repo.ExistsAsync(x => x.Email == entity.Email && x.Id != entity.Id))
+            throw new ArgumentException("A school with this email already exists.", nameof(entity.Email));
+
+        // Uniqueness: Phone number already exists (if provided, exclude self)
+        if (!string.IsNullOrWhiteSpace(entity.PhoneNumber))
+        {
+            if (await _repo.ExistsAsync(x => x.PhoneNumber == entity.PhoneNumber && x.Id != entity.Id))
+                throw new ArgumentException("A school with this phone number already exists.", nameof(entity.PhoneNumber));
+        }
     }
 }

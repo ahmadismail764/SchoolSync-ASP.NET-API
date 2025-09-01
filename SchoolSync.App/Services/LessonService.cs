@@ -20,13 +20,12 @@ public class LessonService(ILessonRepo repo) : GenericService<Lesson>(repo), ILe
         if (entity.SubjectId <= 0)
             throw new ArgumentException("SubjectId must be a positive integer.", nameof(entity.SubjectId));
 
-        // Uniqueness: Title must be unique per Subject
-        var existing = await repo.GetRangeWhereAsync(x => x.Title == entity.Title && x.SubjectId == entity.SubjectId);
-        if (existing.Any())
+        // Uniqueness: Title already exists per Subject
+        if (await repo.ExistsAsync(x => x.Title == entity.Title && x.SubjectId == entity.SubjectId))
             throw new ArgumentException("A lesson with this title already exists for the subject.", nameof(entity.Title));
     }
 
-    public override Task ValidateUpdateAsync(Lesson entity)
+    public override async Task ValidateUpdateAsync(Lesson entity)
     {
         if (string.IsNullOrWhiteSpace(entity.Title))
             throw new ArgumentException("Title is required.", nameof(entity.Title));
@@ -38,6 +37,9 @@ public class LessonService(ILessonRepo repo) : GenericService<Lesson>(repo), ILe
             throw new ArgumentException("Description cannot exceed 500 characters.", nameof(entity.Description));
         if (entity.SubjectId <= 0)
             throw new ArgumentException("SubjectId must be a positive integer.", nameof(entity.SubjectId));
-        return Task.CompletedTask;
+
+        // Uniqueness: Title already exists per Subject (exclude self)
+        if (await repo.ExistsAsync(x => x.Title == entity.Title && x.SubjectId == entity.SubjectId && x.Id != entity.Id))
+            throw new ArgumentException("A lesson with this title already exists for the subject.", nameof(entity.Title));
     }
 }

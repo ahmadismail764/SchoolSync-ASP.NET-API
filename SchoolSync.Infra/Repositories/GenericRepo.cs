@@ -7,6 +7,10 @@ namespace SchoolSync.Infra.Repositories;
 
 public class GenericRepo<T>(DBContext context) : IGenericRepo<T> where T : class
 {
+    public async Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate)
+    {
+        return await dbSet.AnyAsync(predicate);
+    }
     protected readonly DbContext context = context;
     protected readonly DbSet<T> dbSet = context.Set<T>();
 

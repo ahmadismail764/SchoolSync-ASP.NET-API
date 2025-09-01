@@ -7,7 +7,6 @@ namespace SchoolSync.App.Services;
 public class UserService(IUserRepo userRepo)
     : GenericService<User>(userRepo), IUserService
 {
-
     public async Task<User?> GetByUsernameAsync(string username) => await userRepo.GetByUsernameAsync(username);
     public async Task<User?> GetByEmailAsync(string email) => await userRepo.GetByEmailAsync(email);
     public async Task<IEnumerable<User>> GetByRoleAsync(int roleId) => await userRepo.GetByRoleAsync(roleId);
@@ -21,6 +20,7 @@ public class UserService(IUserRepo userRepo)
             return false;
         return await Task.FromResult(BCrypt.Net.BCrypt.Verify(password, user.PasswordHash));
     }
+
     public async Task<User?> AuthenticateAsync(string username, string password)
     {
         var user = await GetByUsernameAsync(username);
@@ -29,5 +29,40 @@ public class UserService(IUserRepo userRepo)
 
         var isValid = await ValidatePasswordAsync(user, password);
         return isValid ? user : null;
+    }
+
+    public override async Task ValidateCreateAsync(User entity)
+    {
+        // Username uniqueness
+        if (await userRepo.ExistsAsync(u => u.Username == entity.Username))
+            throw new ArgumentException("Username already exists.");
+
+        // Email uniqueness
+        if (await userRepo.ExistsAsync(u => u.Email == entity.Email))
+            throw new ArgumentException("Email already exists.");
+
+        // Phone number uniqueness (if provided)
+        if (!string.IsNullOrWhiteSpace(entity.PhoneNumber))
+        {
+            if (await userRepo.ExistsAsync(u => u.PhoneNumber == entity.PhoneNumber))
+                throw new ArgumentException("Phone number already exists.");
+        }
+    }
+
+    public override async Task ValidateUpdateAsync(User entity)
+    {
+        // Username uniqueness (exclude self)
+        if (await userRepo.ExistsAsync(u => u.Username == entity.Username && u.Id != entity.Id))
+            throw new ArgumentException("Username already exists.");
+
+        // Email uniqueness (exclude self)
+        if (await userRepo.ExistsAsync(u => u.Email == entity.Email && u.Id != entity.Id))
+            throw new ArgumentException("Email already exists.");
+        // Phone number uniqueness (if provided, exclude self)
+        if (!string.IsNullOrWhiteSpace(entity.PhoneNumber))
+        {
+            if (await userRepo.ExistsAsync(u => u.Id != entity.Id && u.PhoneNumber == entity.PhoneNumber))
+                throw new ArgumentException("Phone number already exists.");
+        }
     }
 }

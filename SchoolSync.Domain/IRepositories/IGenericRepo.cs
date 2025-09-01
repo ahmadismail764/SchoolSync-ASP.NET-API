@@ -12,4 +12,5 @@ public interface IGenericRepo<T>
     Task DeleteAsync(int id);
     Task DeleteRangeWhereAsync(Expression<Func<T, bool>> predicate);
     Task SaveChangesAsync();
+    Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate);
 }

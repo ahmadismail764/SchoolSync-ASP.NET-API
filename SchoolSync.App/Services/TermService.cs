@@ -23,7 +23,10 @@ public class TermService(ITermRepo termRepo, ISchoolYearRepo schoolYearRepo)
         var schoolYear = await _schoolYearRepo.GetAsync(entity.SchoolYearId);
         if (schoolYear == null || !schoolYear.IsActive)
             throw new ArgumentException("School year must exist and be active.");
-        // Optionally, check that the term's school matches the school year (if Term has SchoolId)
+
+        // Uniqueness: Name already exists per SchoolYear
+        if (await _termRepo.ExistsAsync(x => x.Name == entity.Name && x.SchoolYearId == entity.SchoolYearId))
+            throw new ArgumentException("A term with this name already exists in the school year.", nameof(entity.Name));
     }
 
     public override async Task ValidateUpdateAsync(Term entity)
@@ -38,6 +41,9 @@ public class TermService(ITermRepo termRepo, ISchoolYearRepo schoolYearRepo)
         var schoolYear = await _schoolYearRepo.GetAsync(entity.SchoolYearId);
         if (schoolYear == null || !schoolYear.IsActive)
             throw new ArgumentException("School year must exist and be active.");
-        // Optionally, check that the term's school matches the school year (if Term has SchoolId)
+
+        // Uniqueness: Name already exists per SchoolYear (exclude self)
+        if (await _termRepo.ExistsAsync(x => x.Name == entity.Name && x.SchoolYearId == entity.SchoolYearId && x.Id != entity.Id))
+            throw new ArgumentException("A term with this name already exists in the school year.", nameof(entity.Name));
     }
 }
