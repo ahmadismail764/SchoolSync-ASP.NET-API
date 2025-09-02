@@ -53,6 +53,7 @@ public class UserController
         if (dto.FullName != null) entity.FullName = dto.FullName;
         if (dto.Email != null) entity.Email = dto.Email;
         if (dto.Username != null) entity.Username = dto.Username;
+        if (dto.PhoneNumber != null) entity.PhoneNumber = dto.PhoneNumber;
         if (dto.SchoolId.HasValue) entity.SchoolId = dto.SchoolId.Value;
         if (dto.RoleId.HasValue) entity.RoleId = dto.RoleId.Value;
         try

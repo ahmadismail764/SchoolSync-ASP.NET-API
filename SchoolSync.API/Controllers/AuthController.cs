@@ -31,23 +31,12 @@ public class AuthController(IUserService userService, ITokenService tokenService
     [AllowAnonymous]
     public async Task<ActionResult<UserDto>> Register([FromBody] CreateUserDto dto)
     {
-        try
-        {
-            var entity = _mapper.Map<User>(dto);
-            if (string.IsNullOrWhiteSpace(dto.Password) || !dto.Password.All(char.IsLetterOrDigit))
-                return BadRequest("Password must be alphanumeric.");
-            entity.PasswordHash = _passwordHasher.HashPassword(entity, dto.Password);
-            var created = await _userService.CreateAsync(entity);
-            return CreatedAtAction(nameof(Register), new { id = created.Id }, _mapper.Map<UserDto>(created));
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(ex.Message);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"An error occurred: {ex.Message}");
-        }
+        var entity = _mapper.Map<User>(dto);
+        if (string.IsNullOrWhiteSpace(dto.Password) || !dto.Password.All(char.IsLetterOrDigit))
+            return BadRequest("Password must be alphanumeric.");
+        entity.PasswordHash = _passwordHasher.HashPassword(entity, dto.Password);
+        var created = await _userService.CreateAsync(entity);
+        return CreatedAtAction(nameof(Register), new { id = created.Id }, _mapper.Map<UserDto>(created));
     }
 }
 

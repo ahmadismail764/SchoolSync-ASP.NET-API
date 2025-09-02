@@ -37,7 +37,13 @@ internal class DBSeeder(DBContext context) : IDBSeeder
     {
         if (!context.Lessons.Any())
         {
-            var subjects = await Subjects.ToListAsync();
+            var subjects = await Subjects.Where(s => s.Id > 0).ToListAsync();
+
+            if (subjects.Count == 0)
+            {
+                throw new InvalidOperationException("No subjects found to create lessons.");
+            }
+
             var lessons = new List<Lesson>
             {
                 new() {
@@ -211,16 +217,26 @@ internal class DBSeeder(DBContext context) : IDBSeeder
         if (!await Users.AnyAsync())
         {
             // Get schools and roles from database to ensure we have proper IDs
-            var schools = await Schools.Where(s => !s.IsDeleted).OrderBy(s => s.Id).ToListAsync();
+            var schools = await Schools.Where(s => !s.IsDeleted && s.Id > 0).OrderBy(s => s.Id).ToListAsync();
             var roles = await Roles.ToListAsync();
 
-            if (!schools.Any())
+            if (schools.Count == 0)
             {
                 throw new InvalidOperationException("No schools found in database. Schools must be seeded before users.");
             }
 
-            var teacherRole = roles.First(r => r.Name == "Teacher");
-            var studentRole = roles.First(r => r.Name == "Student");
+            if (schools.Count < 2)
+            {
+                throw new InvalidOperationException("At least 2 schools must exist to properly seed users.");
+            }
+
+            var teacherRole = roles.FirstOrDefault(r => r.Name == "Teacher");
+            var studentRole = roles.FirstOrDefault(r => r.Name == "Student");
+
+            if (teacherRole == null || studentRole == null)
+            {
+                throw new InvalidOperationException("Teacher and Student roles must exist to seed users.");
+            }
 
             // Microsoft Identity compatible hash for "Password123!" 
             var password = "AQAAAAEAACcQAAAAEKXdFh8HFvTdkHQC3rJz5jXYCgKs2LmOZftLkl2F9qRAFg5VQJ7Z3sF8BaFKL9TqxA==";
@@ -308,7 +324,13 @@ internal class DBSeeder(DBContext context) : IDBSeeder
     {
         if (!await StudentDetails.AnyAsync())
         {
-            var students = await Users.Where(u => u.Role.Name == "Student").ToListAsync();
+            var students = await Users.Include(u => u.Role).Where(u => u.Role.Name == "Student").ToListAsync();
+
+            if (students.Count == 0)
+            {
+                throw new InvalidOperationException("No students found to create student details.");
+            }
+
             var details = students.Select(s => new StudentDetails
             {
                 StudentId = s.Id,
@@ -326,8 +348,19 @@ internal class DBSeeder(DBContext context) : IDBSeeder
     {
         if (!await Subjects.AnyAsync())
         {
-            var schools = await Schools.ToListAsync();
-            var teachers = await Users.Where(u => u.Role.Name == "Teacher").ToListAsync();
+            var schools = await Schools.Where(s => !s.IsDeleted && s.Id > 0).OrderBy(s => s.Id).ToListAsync();
+            var teachers = await Users.Include(u => u.Role).Where(u => u.Role.Name == "Teacher" && u.SchoolId > 0).ToListAsync();
+
+            if (schools.Count == 0 || schools.Count < 2)
+            {
+                throw new InvalidOperationException("At least 2 schools must exist to seed subjects.");
+            }
+
+            if (teachers.Count == 0 || teachers.Count < 2)
+            {
+                throw new InvalidOperationException("At least 2 teachers must exist to seed subjects.");
+            }
+
             var subjects = new List<Subject>
             {
                 new() {
@@ -353,7 +386,7 @@ internal class DBSeeder(DBContext context) : IDBSeeder
                     Code = "SCI101",
                     Credits = 3,
                     SchoolId = schools[1].Id,
-                    TeacherId = teachers[2].Id,
+                    TeacherId = teachers.Count > 2 ? teachers[2].Id : teachers[0].Id,
                     IsActive = true,
                     IsDeleted = false
                 }
@@ -367,7 +400,13 @@ internal class DBSeeder(DBContext context) : IDBSeeder
     {
         if (!await SchoolYears.AnyAsync())
         {
-            var schools = await Schools.ToListAsync();
+            var schools = await Schools.Where(s => !s.IsDeleted && s.Id > 0).OrderBy(s => s.Id).ToListAsync();
+
+            if (schools.Count == 0 || schools.Count < 2)
+            {
+                throw new InvalidOperationException("At least 2 schools must exist to seed school years.");
+            }
+
             var years = new List<SchoolYear>
             {
                 new() {
@@ -396,7 +435,13 @@ internal class DBSeeder(DBContext context) : IDBSeeder
     {
         if (!await Terms.AnyAsync())
         {
-            var years = await SchoolYears.ToListAsync();
+            var years = await SchoolYears.Where(y => !y.IsDeleted && y.Id > 0).OrderBy(y => y.Id).ToListAsync();
+
+            if (years.Count == 0 || years.Count < 2)
+            {
+                throw new InvalidOperationException("At least 2 school years must exist to seed terms.");
+            }
+
             var terms = new List<Term>
             {
                 new() {
@@ -441,10 +486,25 @@ internal class DBSeeder(DBContext context) : IDBSeeder
     {
         if (!await Enrollments.AnyAsync())
         {
-            var students = await Users.Where(u => u.Role.Name == "Student").ToListAsync();
-            var subjects = await Subjects.ToListAsync();
-            var terms = await Terms.Include(t => t.SchoolYear).ToListAsync();
+            var students = await Users.Include(u => u.Role).Where(u => u.Role.Name == "Student" && u.SchoolId > 0).ToListAsync();
+            var subjects = await Subjects.Where(s => s.SchoolId > 0).ToListAsync();
+            var terms = await Terms.Include(t => t.SchoolYear).Where(t => t.SchoolYear.SchoolId > 0).ToListAsync();
             var enrollments = new List<Enrollment>();
+
+            if (students.Count == 0)
+            {
+                throw new InvalidOperationException("No students found to enroll.");
+            }
+
+            if (!subjects.Any())
+            {
+                throw new InvalidOperationException("No subjects found for enrollment.");
+            }
+
+            if (!terms.Any())
+            {
+                throw new InvalidOperationException("No terms found for enrollment.");
+            }
 
             foreach (var student in students)
             {
@@ -452,7 +512,7 @@ internal class DBSeeder(DBContext context) : IDBSeeder
                 var studentSubjects = subjects.Where(s => s.SchoolId == student.SchoolId).ToList();
                 var studentTerms = terms.Where(t => t.SchoolYear.SchoolId == student.SchoolId).ToList();
 
-                if (studentTerms.Any() && studentSubjects.Any())
+                if (studentTerms.Count != 0 && studentSubjects.Count != 0)
                 {
                     // Use the first (current) term for the student's school
                     var currentTerm = studentTerms.OrderBy(t => t.StartDate).First();

@@ -5,9 +5,11 @@ using SchoolSync.Domain.IServices;
 
 namespace SchoolSync.App.Services;
 
-public class UserService(IUserRepo userRepo, IPasswordHasher<User> passwordHasher)
+public class UserService(IUserRepo userRepo, IPasswordHasher<User> passwordHasher, ISchoolRepo schoolRepo)
     : GenericService<User>(userRepo), IUserService
 {
+    private readonly ISchoolRepo _schoolRepo = schoolRepo;
+
     public async Task<User?> GetByUsernameAsync(string username) => await userRepo.GetByUsernameAsync(username);
     public async Task<User?> GetByEmailAsync(string email) => await userRepo.GetByEmailAsync(email);
     public async Task<IEnumerable<User>> GetByRoleAsync(int roleId) => await userRepo.GetByRoleAsync(roleId);
@@ -49,6 +51,9 @@ public class UserService(IUserRepo userRepo, IPasswordHasher<User> passwordHashe
             if (await userRepo.ExistsAsync(u => u.PhoneNumber == entity.PhoneNumber))
                 throw new ArgumentException("Phone number already exists.");
         }
+        var schoolExists = await _schoolRepo.ExistsAsync(s => s.Id == entity.SchoolId);
+        if (!schoolExists)
+            throw new ArgumentException("That school does not exist.");
     }
 
     public override async Task ValidateUpdateAsync(User entity)

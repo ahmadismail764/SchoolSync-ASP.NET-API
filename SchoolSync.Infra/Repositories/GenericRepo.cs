@@ -29,16 +29,10 @@ public class GenericRepo<T>(DBContext context) : IGenericRepo<T> where T : class
         return Expression.Lambda<Func<T, bool>>(combinedBody, parameter);
     }
 
-    private class ParameterReplacer : ExpressionVisitor
+    private class ParameterReplacer(ParameterExpression oldParameter, ParameterExpression newParameter) : ExpressionVisitor
     {
-        private readonly ParameterExpression _oldParameter;
-        private readonly ParameterExpression _newParameter;
-
-        public ParameterReplacer(ParameterExpression oldParameter, ParameterExpression newParameter)
-        {
-            _oldParameter = oldParameter;
-            _newParameter = newParameter;
-        }
+        private readonly ParameterExpression _oldParameter = oldParameter;
+        private readonly ParameterExpression _newParameter = newParameter;
 
         protected override Expression VisitParameter(ParameterExpression node)
         {

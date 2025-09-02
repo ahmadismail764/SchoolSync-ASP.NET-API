@@ -5,6 +5,7 @@ using Microsoft.OpenApi.Models;
 using SchoolSync.App.Extensions;
 using SchoolSync.Domain.Entities;
 using SchoolSync.Infra.Extensions;
+using SchoolSync.API.Middleware;
 using System.Reflection;
 using System.Text;
 
@@ -74,6 +75,9 @@ builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly(), typeof(SchoolSyn
 var app = builder.Build();
 
 await app.Services.SeedDatabaseAsync();
+
+// Add exception handling middleware
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseSwagger();
 app.UseSwaggerUI();
