@@ -74,7 +74,12 @@ builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly(), typeof(SchoolSyn
 
 var app = builder.Build();
 
-await app.Services.SeedDatabaseAsync();
+// Check if seeding is enabled in configuration
+var seedData = app.Configuration.GetValue<bool>("Database:SeedData", true);
+if (seedData)
+{
+    await app.Services.SeedDatabaseAsync();
+}
 
 // Add exception handling middleware
 app.UseMiddleware<ExceptionHandlingMiddleware>();
