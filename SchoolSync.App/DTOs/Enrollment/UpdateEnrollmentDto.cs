@@ -10,7 +10,5 @@ public class UpdateEnrollmentDto
 
     public int? TermId { get; set; }
 
-    public DateTime? EnrollmentDate { get; set; }
-
     public decimal? Grade { get; set; }
 }
