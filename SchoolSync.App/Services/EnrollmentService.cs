@@ -37,11 +37,7 @@ public class EnrollmentService(IEnrollmentRepo enrollmentRepo, IUserRepo userRep
         if (schoolYear == null || schoolYear.SchoolId != student.SchoolId)
             throw new ArgumentException("Term must belong to the student's school.");
 
-        // 6. Validate enrollment date is within term dates
-        if (entity.EnrollmentDate < term.StartDate || entity.EnrollmentDate > term.EndDate)
-            throw new ArgumentException("Enrollment date must be within the term period.");
-
-        // 7. Uniqueness: a student can only be enrolled once per subject per term
+        // 6. Uniqueness: a student can only be enrolled once per subject per term
         if (await enrollmentRepo.ExistsAsync(e => e.StudentId == entity.StudentId && e.SubjectId == entity.SubjectId && e.TermId == entity.TermId))
             throw new ArgumentException("This student is already enrolled in this subject for this term.");
     }

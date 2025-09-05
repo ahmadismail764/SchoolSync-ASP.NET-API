@@ -58,7 +58,6 @@ public class EnrollmentController(IEnrollmentService enrollmentService, IMapper 
         if (dto.StudentId.HasValue) entity.StudentId = dto.StudentId.Value;
         if (dto.SubjectId.HasValue) entity.SubjectId = dto.SubjectId.Value;
         if (dto.TermId.HasValue) entity.TermId = dto.TermId.Value;
-        if (dto.EnrollmentDate.HasValue) entity.EnrollmentDate = dto.EnrollmentDate.Value;
         if (dto.Grade.HasValue) entity.Grade = dto.Grade.Value;
         try
         {

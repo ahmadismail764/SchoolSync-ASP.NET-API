@@ -519,15 +519,11 @@ internal class DBSeeder(DBContext context) : IDBSeeder
 
                     foreach (var subject in studentSubjects)
                     {
-                        // Set enrollment date to be within the term period
-                        var enrollmentDate = currentTerm.StartDate.AddDays(7); // Enroll 1 week after term starts
-
                         enrollments.Add(new Enrollment
                         {
                             StudentId = student.Id,
                             SubjectId = subject.Id,
                             TermId = currentTerm.Id,
-                            EnrollmentDate = enrollmentDate,
                             IsActive = true,
                             IsDeleted = false
                         });
