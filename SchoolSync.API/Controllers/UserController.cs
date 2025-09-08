@@ -12,13 +12,14 @@ namespace SchoolSync.API.Controllers;
 
 [ApiController]
 [Route("api/users")]
-[Authorize(Roles = "2")]
+[Authorize(Roles = "Admin")]  // Admin only
 public class UserController
-(IUserService service, IMapper mapper, IPasswordHasher<User> passwordHasher) : ControllerBase
+(IUserService service, IMapper mapper, IPasswordHasher<User> passwordHasher, ITokenService tokenService) : ControllerBase
 {
     private readonly IUserService _service = service;
     private readonly IMapper _mapper = mapper;
     private readonly IPasswordHasher<User> _passwordHasher = passwordHasher;
+    private readonly ITokenService _tokenService = tokenService;
 
     [HttpGet("{id}")]
     public async Task<ActionResult<UserDto>> GetById(int id)
@@ -117,16 +118,25 @@ public class UserController
 
         // Check if the user is deleting themselves
         var currentUserIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var currentUserRoleClaim = User.FindFirst(ClaimTypes.Role)?.Value;
+
         if (int.TryParse(currentUserIdClaim, out int currentUserId) && currentUserId == id)
         {
-            // User is deleting themselves - proceed with deletion
+            // User is trying to delete themselves
+            if (currentUserRoleClaim == "Teacher") // Teacher role
+            {
+                return Forbid("Teachers cannot delete their own accounts. Please contact an administrator.");
+            }
+
+            // Admin can delete themselves (though not recommended)
             await _service.DeleteAsync(id);
-            // Return a special response indicating the user should be logged out
+            await _tokenService.RevokeTokensForUserAsync(id);
             return Ok(new { message = "Account deleted successfully. Please log out.", shouldLogout = true });
         }
 
         // Different user being deleted by admin
         await _service.DeleteAsync(id);
+        await _tokenService.RevokeTokensForUserAsync(id);
         return NoContent();
     }
 

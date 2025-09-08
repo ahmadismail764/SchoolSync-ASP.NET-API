@@ -9,7 +9,7 @@ namespace SchoolSync.API.Controllers;
 
 [ApiController]
 [Route("api/schoolyears")]
-[Authorize(Roles = "2")]
+[Authorize(Roles = "Admin")]  // Admin only
 public class SchoolYearController(ISchoolYearService service, IMapper mapper) : ControllerBase
 {
     private readonly ISchoolYearService _service = service;

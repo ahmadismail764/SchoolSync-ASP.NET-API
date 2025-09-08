@@ -8,7 +8,7 @@ namespace SchoolSync.API.Controllers;
 
 [ApiController]
 [Route("api/enrollments")]
-[Authorize(Roles = "2")]
+[Authorize(Roles = "Admin,Teacher")]  // Admin and Teacher
 public class EnrollmentController(IEnrollmentService enrollmentService) : ControllerBase
 {
     private readonly IEnrollmentService _service = enrollmentService;
@@ -25,7 +25,7 @@ public class EnrollmentController(IEnrollmentService enrollmentService) : Contro
         };
     }
 
-    private Enrollment MapToEntity(CreateEnrollmentDto dto)
+    private static Enrollment MapToEntity(CreateEnrollmentDto dto)
     {
         return new Enrollment
         {

@@ -19,7 +19,7 @@ public class EnrollmentService(IEnrollmentRepo enrollmentRepo, IUserRepo userRep
     {
         // 1. Validate Student exists and is a student
         var student = await _userRepo.GetWithRoleAsync(entity.StudentId) ?? throw new ArgumentException("Student not found.", nameof(entity.StudentId));
-        if (student.RoleId != 1)
+        if (student.Role.Name != "Student")
             throw new ArgumentException("User is not a student.", nameof(entity.StudentId));
 
         // 2. Validate Subject exists

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using SchoolSync.API.Helpers;
 using SchoolSync.Domain.Entities;
 using SchoolSync.Domain.IServices;
@@ -7,6 +8,7 @@ namespace SchoolSync.API.Controllers;
 
 [ApiController]
 [Route("api/materials")]
+[Authorize(Roles = "Admin,Student,Teacher")]  // All authenticated users can access materials
 public class MaterialController(IMaterialService materialService) : ControllerBase
 {
     private readonly IMaterialService _materialService = materialService;
@@ -23,6 +25,7 @@ public class MaterialController(IMaterialService materialService) : ControllerBa
     }
 
     [HttpPost("upload")]
+    [Authorize(Roles = "1,3")]  // Only Admin and Teacher can upload
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> Upload([FromForm] int lessonId, [FromForm] string? description, [FromForm] UploadMaterialDto uploaded_file)
     {

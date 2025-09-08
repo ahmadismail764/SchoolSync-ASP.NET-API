@@ -43,7 +43,9 @@ public static class ServiceCollectionExtensions
         var seeder = scope.ServiceProvider.GetRequiredService<IDBSeeder>();
         await context.Database.EnsureCreatedAsync();
 
+        Console.WriteLine("Seeding database with initial data...");
         await seeder.SeedAsync();
+        Console.WriteLine("Database seeding completed.");
         return serviceProvider;
     }
 }

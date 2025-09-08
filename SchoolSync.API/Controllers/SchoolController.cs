@@ -11,7 +11,7 @@ namespace SchoolSync.API.Controllers;
 
 [ApiController]
 [Route("api/schools")]
-[Authorize(Roles = "2")]
+[Authorize(Roles = "Admin")]  // Admin only
 public class SchoolController(ISchoolService service, IMapper mapper) : ControllerBase
 {
     private readonly ISchoolService _service = service;

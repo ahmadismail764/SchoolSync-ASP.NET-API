@@ -38,6 +38,18 @@ public class AuthController(IUserService userService, ITokenService tokenService
         var created = await _userService.CreateAsync(entity);
         return CreatedAtAction(nameof(Register), new { id = created.Id }, _mapper.Map<UserDto>(created));
     }
+
+    [HttpPost("revoke/{userId}")]
+    [Authorize(Roles = "Admin")]  // Admin only
+    public async Task<IActionResult> RevokeUserTokens(int userId)
+    {
+        var user = await _userService.GetByIdAsync(userId);
+        if (user == null)
+            return NotFound($"User with ID {userId} not found.");
+
+        await _tokenService.RevokeTokensForUserAsync(userId);
+        return Ok(new { message = $"All tokens for user {user.Username} have been revoked." });
+    }
 }
 
 public class LoginRequest

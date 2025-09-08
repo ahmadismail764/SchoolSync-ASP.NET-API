@@ -113,6 +113,7 @@ internal class DBSeeder(DBContext context) : IDBSeeder
         {
             var roles = new List<Role>
             {
+                new() { Name = "Admin" },
                 new() { Name = "Student" },
                 new() { Name = "Teacher" }
             };
@@ -230,18 +231,31 @@ internal class DBSeeder(DBContext context) : IDBSeeder
                 throw new InvalidOperationException("At least 2 schools must exist to properly seed users.");
             }
 
+            var adminRole = roles.FirstOrDefault(r => r.Name == "Admin");
             var teacherRole = roles.FirstOrDefault(r => r.Name == "Teacher");
             var studentRole = roles.FirstOrDefault(r => r.Name == "Student");
 
-            if (teacherRole == null || studentRole == null)
+            if (adminRole == null || teacherRole == null || studentRole == null)
             {
-                throw new InvalidOperationException("Teacher and Student roles must exist to seed users.");
+                throw new InvalidOperationException("Admin, Teacher and Student roles must exist to seed users.");
             }
 
             // Microsoft Identity compatible hash for "Password123!" 
             var password = "AQAAAAEAACcQAAAAEKXdFh8HFvTdkHQC3rJz5jXYCgKs2LmOZftLkl2F9qRAFg5VQJ7Z3sF8BaFKL9TqxA==";
             var users = new List<User>
             {
+                // Admin user
+                new() {
+                    FullName = "System Administrator",
+                    Email = "admin@schoolsync.edu",
+                    Username = "admin",
+                    PhoneNumber = "+1234567890",
+                    SchoolId = schools[0].Id, // Assign to first school
+                    RoleId = adminRole.Id,
+                    PasswordHash = password,
+                    IsActive = true,
+                    IsDeleted = false
+                },
                 // Teachers
                 new() {
                     FullName = "Alice Smith",

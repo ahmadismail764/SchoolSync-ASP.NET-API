@@ -8,7 +8,7 @@ namespace SchoolSync.API.Controllers;
 
 [ApiController]
 [Route("api/lesson")]
-[Authorize(Roles = "2")]
+[Authorize(Roles = "Admin,Teacher")]  // Admin and Teacher
 public class LessonController(ILessonService lessonService, IMapper mapper) : ControllerBase
 {
     private readonly ILessonService _lessonService = lessonService;

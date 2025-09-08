@@ -9,7 +9,7 @@ namespace SchoolSync.API.Controllers;
 
 [ApiController]
 [Route("api/subjects")]
-[Authorize(Roles = "2")]
+[Authorize(Roles = "Admin,Teacher")]  // Admin and Teacher
 public class SubjectController(ISubjectService service, IEnrollmentService enrollmentService, IMapper mapper) : ControllerBase
 {
     private readonly ISubjectService _service = service;

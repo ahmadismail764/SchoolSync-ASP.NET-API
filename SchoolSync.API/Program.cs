@@ -6,6 +6,7 @@ using SchoolSync.App.Extensions;
 using SchoolSync.Domain.Entities;
 using SchoolSync.Infra.Extensions;
 using SchoolSync.API.Middleware;
+using SchoolSync.Infra.Persistence;
 using System.Reflection;
 using System.Text;
 
@@ -74,8 +75,24 @@ builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly(), typeof(SchoolSyn
 
 var app = builder.Build();
 
-// Check if seeding is enabled in configuration
+// Handle database recreation in development
+var isDevelopment = app.Environment.IsDevelopment();
+var recreateOnStartup = app.Configuration.GetValue<bool>("Database:RecreateOnStartup", false);
 var seedData = app.Configuration.GetValue<bool>("Database:SeedData", true);
+
+if (isDevelopment && recreateOnStartup)
+{
+    using var scope = app.Services.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<DBContext>();
+
+    // Delete and recreate database
+    await context.Database.EnsureDeletedAsync();
+    await context.Database.EnsureCreatedAsync();
+
+    Console.WriteLine("Database recreated for development environment.");
+}
+
+// Seed data if enabled
 if (seedData)
 {
     await app.Services.SeedDatabaseAsync();
@@ -88,6 +105,7 @@ app.UseSwagger();
 app.UseSwaggerUI();
 app.UseHttpsRedirection();
 app.UseAuthentication();
+app.UseMiddleware<TokenValidationMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();

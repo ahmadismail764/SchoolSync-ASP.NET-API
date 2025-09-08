@@ -9,7 +9,7 @@ namespace SchoolSync.API.Controllers;
 
 [ApiController]
 [Route("api/terms")]
-[Authorize(Roles = "2")]
+[Authorize(Roles = "Admin")]  // Admin only
 public class TermController(ITermService service, IMapper mapper) : ControllerBase
 {
     private readonly ITermService _service = service;
