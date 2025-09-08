@@ -8,16 +8,16 @@ SchoolSync is a production-grade, modular, and extensible ASP.NET Core Web API f
 
 ## Table of Contents
 
-- [Project Structure](#project-structure)
+- [Project Structure & Engineering Principles](#project-structure--engineering-principles)
 - [Features](#features)
-- [Domain Model](#domain-model)
+- [Domain Model & Relationships](#domain-model--relationships)
 - [API Overview](#api-overview)
 - [Validation & Business Logic](#validation--business-logic)
 - [File Uploads & Downloads](#file-uploads--downloads)
 - [Authentication & Authorization](#authentication--authorization)
 - [Getting Started](#getting-started)
 - [Development & Architecture](#development--architecture)
-- [Troubleshooting](#troubleshooting)
+- [Troubleshooting & Best Practices](#troubleshooting--best-practices)
 - [License](#license)
 
 ---

@@ -18,15 +18,15 @@ public class EnrollmentService(IEnrollmentRepo enrollmentRepo, IUserRepo userRep
     public override async Task ValidateCreateAsync(Enrollment entity)
     {
         // 1. Validate Student exists and is a student
-        var student = await _userRepo.GetAsync(entity.StudentId) ?? throw new ArgumentException("Student not found.");
-        if (student.RoleId != 1) // Assuming 2 is Student role
-            throw new ArgumentException("User is not a student.");
+        var student = await _userRepo.GetWithRoleAsync(entity.StudentId) ?? throw new ArgumentException("Student not found.", nameof(entity.StudentId));
+        if (student.RoleId != 1)
+            throw new ArgumentException("User is not a student.", nameof(entity.StudentId));
 
         // 2. Validate Subject exists
-        var subject = await _subjectRepo.GetAsync(entity.SubjectId) ?? throw new ArgumentException("Subject not found.");
+        var subject = await _subjectRepo.GetAsync(entity.SubjectId) ?? throw new ArgumentException("Subject not found.", nameof(entity.SubjectId));
 
         // 3. Validate Term exists
-        var term = await _termRepo.GetAsync(entity.TermId) ?? throw new ArgumentException("Term not found.");
+        var term = await _termRepo.GetAsync(entity.TermId) ?? throw new ArgumentException("Term not found.", nameof(entity.TermId));
 
         // 4. Validate Student and Subject belong to the same school
         if (student.SchoolId != subject.SchoolId)
@@ -43,11 +43,11 @@ public class EnrollmentService(IEnrollmentRepo enrollmentRepo, IUserRepo userRep
     }
     public override async Task ValidateUpdateAsync(Enrollment entity)
     {
-        // Apply same validations as create for data integrity
-        await ValidateCreateAsync(entity);
+        // Validate enrollment exists
+        var existing = await enrollmentRepo.GetAsync(entity.Id) ?? throw new ArgumentException("Enrollment not found.", nameof(entity.Id));
 
-        // Additional check: Uniqueness excluding self
-        if (await enrollmentRepo.ExistsAsync(e => e.StudentId == entity.StudentId && e.SubjectId == entity.SubjectId && e.TermId == entity.TermId && e.Id != entity.Id))
-            throw new ArgumentException("This student is already enrolled in this subject for this term.");
+        // Validate grade is between 0 and 100
+        if (entity.Grade < 0 || entity.Grade > 100)
+            throw new ArgumentException("Grade must be between 0 and 100.", nameof(entity.Grade));
     }
 }

@@ -1,4 +1,3 @@
-using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SchoolSync.Domain.Entities;
@@ -10,16 +9,38 @@ namespace SchoolSync.API.Controllers;
 [ApiController]
 [Route("api/enrollments")]
 [Authorize(Roles = "2")]
-public class EnrollmentController(IEnrollmentService enrollmentService, IMapper mapper) : ControllerBase
+public class EnrollmentController(IEnrollmentService enrollmentService) : ControllerBase
 {
     private readonly IEnrollmentService _service = enrollmentService;
-    private readonly IMapper _mapper = mapper;
+
+    // Helper methods for manual mapping
+    private EnrollmentDto MapToDto(Enrollment enrollment)
+    {
+        return new EnrollmentDto
+        {
+            UserId = enrollment.StudentId,
+            TermId = enrollment.TermId,
+            SubjectId = enrollment.SubjectId,
+            Grade = enrollment.Grade
+        };
+    }
+
+    private Enrollment MapToEntity(CreateEnrollmentDto dto)
+    {
+        return new Enrollment
+        {
+            StudentId = dto.StudentId,
+            SubjectId = dto.SubjectId,
+            TermId = dto.TermId
+        };
+    }
 
     [HttpGet]
     public virtual async Task<ActionResult<IEnumerable<EnrollmentDto>>> GetAll()
     {
         var entities = await _service.GetAllAsync();
-        return Ok(_mapper.Map<IEnumerable<EnrollmentDto>>(entities));
+        var dtos = entities.Select(MapToDto);
+        return Ok(dtos);
     }
 
     [HttpGet("{id}")]
@@ -27,26 +48,15 @@ public class EnrollmentController(IEnrollmentService enrollmentService, IMapper 
     {
         var entity = await _service.GetByIdAsync(id);
         if (entity == null) return NotFound();
-        return Ok(_mapper.Map<EnrollmentDto>(entity));
+        return Ok(MapToDto(entity));
     }
 
     [HttpPost]
     public virtual async Task<ActionResult<EnrollmentDto>> Create([FromBody] CreateEnrollmentDto dto)
     {
-        try
-        {
-            var entity = _mapper.Map<Enrollment>(dto);
-            var created = await _service.CreateAsync(entity);
-            return CreatedAtAction(nameof(GetById), new { id = (created as dynamic).Id }, _mapper.Map<EnrollmentDto>(created));
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(ex.Message);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"An error occurred: {ex.Message}");
-        }
+        var entity = MapToEntity(dto);
+        var created = await _service.CreateAsync(entity);
+        return CreatedAtAction(nameof(GetById), new { id = created.Id }, MapToDto(created));
     }
 
 
@@ -55,23 +65,15 @@ public class EnrollmentController(IEnrollmentService enrollmentService, IMapper 
     {
         var entity = await _service.GetByIdAsync(id);
         if (entity == null) return NotFound();
-        if (dto.StudentId.HasValue) entity.StudentId = dto.StudentId.Value;
-        if (dto.SubjectId.HasValue) entity.SubjectId = dto.SubjectId.Value;
-        if (dto.TermId.HasValue) entity.TermId = dto.TermId.Value;
-        if (dto.Grade.HasValue) entity.Grade = dto.Grade.Value;
-        try
+
+        // Manual mapping - only update Grade if provided
+        if (dto.Grade.HasValue)
         {
-            await _service.UpdateAsync(entity);
-            return Ok(_mapper.Map<EnrollmentDto>(entity));
+            entity.Grade = dto.Grade.Value;
         }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(ex.Message);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"An error occurred: {ex.Message}");
-        }
+
+        await _service.UpdateAsync(entity);
+        return Ok(MapToDto(entity));
     }
 
     [HttpDelete("{id}")]

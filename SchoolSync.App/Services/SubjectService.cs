@@ -15,27 +15,25 @@ public class SubjectService(ISubjectRepo subjectRepo, IUserRepo userRepo)
     public override async Task ValidateCreateAsync(Subject entity)
     {
         if (string.IsNullOrWhiteSpace(entity.Name))
-            throw new ArgumentException("Subject name is required.");
+            throw new ArgumentException("Subject name is required.", nameof(entity));
         if (entity.SchoolId <= 0)
-            throw new ArgumentException("SchoolId must be set.");
+            throw new ArgumentException("SchoolId must be set.", nameof(entity));
 
         // Validate teacher if specified
         if (entity.TeacherId > 0)
         {
-            var teacher = await _userRepo.GetWithRoleAsync(entity.TeacherId) ?? throw new ArgumentException("Teacher not found.", nameof(entity.TeacherId));
-
-            // Check if user is actually a teacher
+            var teacher = await _userRepo.GetWithRoleAsync(entity.TeacherId);
+            if (teacher == null)
+                throw new ArgumentException("Teacher not found.", nameof(entity));
             if (teacher.Role?.Name != "Teacher")
-                throw new ArgumentException("User is not a teacher.", nameof(entity.TeacherId));
-
-            // Check if teacher belongs to the same school
+                throw new ArgumentException("User is not a teacher.", nameof(entity));
             if (teacher.SchoolId != entity.SchoolId)
-                throw new ArgumentException("Teacher must belong to the same school as the subject.", nameof(entity.TeacherId));
+                throw new ArgumentException("Teacher must belong to the same school as the subject.", nameof(entity));
         }
 
         // Uniqueness: Name already exists per School
         if (await subjectRepo.ExistsAsync(x => x.Name == entity.Name && x.SchoolId == entity.SchoolId))
-            throw new ArgumentException("A subject with this name already exists in the school.", nameof(entity.Name));
+            throw new ArgumentException("A subject with this name already exists in the school.", nameof(entity));
     }
 
     public override async Task ValidateUpdateAsync(Subject entity)
