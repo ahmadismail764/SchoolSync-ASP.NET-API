@@ -25,9 +25,9 @@ public class UserService(IUserRepo userRepo, IPasswordHasher<User> passwordHashe
         return await Task.FromResult(result == PasswordVerificationResult.Success);
     }
 
-    public async Task<User?> AuthenticateAsync(string username, string password)
+    public async Task<User?> AuthenticateAsync(string email, string password)
     {
-        var user = await GetByUsernameAsync(username);
+        var user = await GetByEmailAsync(email);
         if (user == null)
             return null;
 

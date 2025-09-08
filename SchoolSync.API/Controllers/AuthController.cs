@@ -20,7 +20,7 @@ public class AuthController(IUserService userService, ITokenService tokenService
     [AllowAnonymous]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
-        var user = await _userService.AuthenticateAsync(request.Username, request.Password);
+        var user = await _userService.AuthenticateAsync(request.Email, request.Password);
         if (user == null) return Unauthorized();
 
         var token = _tokenService.GenerateToken(user);
@@ -54,6 +54,6 @@ public class AuthController(IUserService userService, ITokenService tokenService
 
 public class LoginRequest
 {
-    public string Username { get; set; } = null!;
+    public string Email { get; set; } = null!;
     public string Password { get; set; } = null!;
 }
