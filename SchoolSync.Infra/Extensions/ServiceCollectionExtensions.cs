@@ -30,6 +30,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUserRepo, UserRepo>();
         services.AddScoped<ILessonRepo, LessonRepo>();
         services.AddScoped<IMaterialRepo, MaterialRepo>();
+        services.AddScoped<IEmailVerificationRepo, EmailVerificationRepo>();
 
         // Register seeders
         services.AddScoped<IDBSeeder, DBSeeder>();

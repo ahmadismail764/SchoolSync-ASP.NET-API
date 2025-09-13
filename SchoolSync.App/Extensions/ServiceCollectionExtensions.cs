@@ -19,6 +19,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IMaterialService, MaterialService>();
         services.AddScoped<ILessonService, LessonService>();
+        services.AddScoped<IEmailVerificationService, EmailVerificationService>();
         services.AddAutoMapper(Assembly.GetExecutingAssembly());
         return services;
     }
