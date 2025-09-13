@@ -49,7 +49,13 @@ public class EmailVerificationService(IConfiguration config, IEmailVerificationR
 
     public Task AddVerificationAsync(EmailVerification emailVerification) => _emailVerificationRepo.AddAsync(emailVerification);
 
-
+    public async Task<bool> CorrectTempPasswordAsync(string email, string tempPassword)
+    {
+        var currentVerif = await _emailVerificationRepo.GetLatestVerificationAsync(email);
+        if (currentVerif == null || currentVerif.IsVerified || currentVerif.ExpiresAt < DateTime.UtcNow)
+            return false;
+        return currentVerif.TempPassword == tempPassword;
+    }
     public async Task SendVerificationEmailAsync(string email)
     {
         string tempPassword = new Faker().Internet.Password(16, false, "[A-Z0-9!@#$%^&*]");
