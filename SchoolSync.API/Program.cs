@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using SchoolSync.App.Extensions;
@@ -75,21 +76,29 @@ builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly(), typeof(SchoolSyn
 
 var app = builder.Build();
 
-// Handle database recreation in development
+// Handle database setup in development
 var isDevelopment = app.Environment.IsDevelopment();
 var recreateOnStartup = app.Configuration.GetValue<bool>("Database:RecreateOnStartup", false);
 var seedData = app.Configuration.GetValue<bool>("Database:SeedData", true);
 
-if (isDevelopment && recreateOnStartup)
+if (isDevelopment)
 {
     using var scope = app.Services.CreateScope();
     var context = scope.ServiceProvider.GetRequiredService<DBContext>();
 
-    // Delete and recreate database
-    await context.Database.EnsureDeletedAsync();
-    await context.Database.EnsureCreatedAsync();
-
-    Console.WriteLine("Database recreated for development environment.");
+    if (recreateOnStartup)
+    {
+        // Only recreate if explicitly requested
+        await context.Database.EnsureDeletedAsync();
+        await context.Database.EnsureCreatedAsync();
+        Console.WriteLine("Database recreated for development environment.");
+    }
+    else
+    {
+        // Use migrations to update database (preserves migration history)
+        await context.Database.MigrateAsync();
+        Console.WriteLine("Database updated using migrations.");
+    }
 }
 
 // Seed data if enabled
