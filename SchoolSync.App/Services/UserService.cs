@@ -29,10 +29,12 @@ public class UserService(IUserRepo userRepo, IPasswordHasher<User> passwordHashe
     {
         var user = await GetByEmailAsync(email);
         if (user == null)
-            return null;
+            throw new ArgumentException("User not found.");
 
         var isValid = await ValidatePasswordAsync(user, password);
-        return isValid ? user : null;
+        if (!isValid)
+            throw new ArgumentException("Incorrect password.");
+        return user;
     }
 
     public override async Task ValidateCreateAsync(User entity)

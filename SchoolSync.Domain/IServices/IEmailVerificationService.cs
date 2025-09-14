@@ -11,5 +11,5 @@ public interface IEmailVerificationService
 
     Task AddVerificationAsync(EmailVerification emailVerification);
 
-    Task SendVerificationEmailAsync(string email);
+    Task<string> SendVerificationEmailAsync(string email);
 }

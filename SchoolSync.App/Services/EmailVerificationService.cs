@@ -56,7 +56,8 @@ public class EmailVerificationService(IConfiguration config, IEmailVerificationR
             return false;
         return currentVerif.TempPassword == tempPassword;
     }
-    public async Task SendVerificationEmailAsync(string email)
+
+    public async Task<string> SendVerificationEmailAsync(string email)
     {
         string tempPassword = new Faker().Internet.Password(16, false, "[A-Z0-9!@#$%^&*]");
         try
@@ -76,5 +77,6 @@ public class EmailVerificationService(IConfiguration config, IEmailVerificationR
             IsVerified = false
         };
         await AddVerificationAsync(newVerification);
+        return tempPassword;
     }
 }
