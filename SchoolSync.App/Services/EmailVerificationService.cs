@@ -32,10 +32,11 @@ public class EmailVerificationService(IConfiguration config, IEmailVerificationR
         message.Body = new TextPart("html") { Text = body };
 
         using var client = new SmtpClient();
-        await client.ConnectAsync(smtpHost, smtpPort, false);
+        await client.ConnectAsync(smtpHost, smtpPort, MailKit.Security.SecureSocketOptions.StartTls);
         await client.AuthenticateAsync(smtpUser, smtpPass);
         await client.SendAsync(message);
         await client.DisconnectAsync(true);
+
 
     }
 

@@ -45,7 +45,6 @@ public class AuthController(IUserService userService, IEmailVerificationService 
             return BadRequest(ex.Message);
         }
 
-
     }
 
     [HttpPost("register")]
