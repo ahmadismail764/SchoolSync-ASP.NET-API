@@ -43,8 +43,8 @@ public class AuthController(IUserService userService, IEmailVerificationService 
         catch (Exception ex)
         {
             return BadRequest(ex.Message);
-        }
 
+        }
     }
 
     [HttpPost("register")]
