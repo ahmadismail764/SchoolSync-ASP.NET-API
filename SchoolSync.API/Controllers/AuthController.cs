@@ -23,27 +23,32 @@ public class AuthController(IUserService userService, IEmailVerificationService 
     {
         try
         {
-            bool verif_status = await _emailVerifService.IsVerifiedAsync(request.Email);
             var user = await _userService.AuthenticateAsync(request.Email, request.Password);
+            bool verif_status = await _emailVerifService.IsVerifiedAsync(request.Email);
+
             if (verif_status)
             {
-#pragma warning disable CS8604 // Possible null reference argument.
-                // This is already handled by the user service's AuthenticateAsync method.
-                // So it is impossible to return null here.
                 var token = _tokenService.GenerateToken(user);
-#pragma warning restore CS8604 // Possible null reference argument.
                 return Ok(new { token });
             }
             else
             {
-                await _emailVerifService.MarkVerifiedAsync(request.Email);
-                return RedirectToAction(nameof(SetNewPassword), new { message = "Email verified successfully. Please set your new password." });
+                // Require password change without marking as verified yet
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+                user.PasswordHash = string.Empty;
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+                await _userService.UpdateAsync(user);
+                return Ok(new
+                {
+                    requirePasswordChange = true,
+                    message = "Please set a new password",
+                    redirectTo = "/api/auth/set-password"
+                });
             }
         }
         catch (Exception ex)
         {
             return BadRequest(ex.Message);
-
         }
     }
 
@@ -71,22 +76,34 @@ public class AuthController(IUserService userService, IEmailVerificationService 
     }
 
     [HttpPost("set-password")]
+    [AllowAnonymous]
     public async Task<ActionResult> SetNewPassword([FromBody] SetPasswordDto dto)
     {
         try
         {
-            var user = await _userService.AuthenticateAsync(dto.Email, dto.OldPassword);
+            var user = await _userService.GetByEmailAsync(dto.Email);
+
+            var isValidPassword = await _emailVerifService.CorrectTempPasswordAsync(dto.Email, dto.OldPassword);
+            if (!isValidPassword) return Unauthorized("Invalid current password.");
+
             if (dto.NewPassword != dto.ConfirmNewPassword)
                 return BadRequest("Passwords do not match.");
 
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-            // This is already handled by the user service's AuthenticateAsync method.
-            // So it is impossible to return null here.
             user.PasswordHash = _passwordHasher.HashPassword(user, dto.NewPassword);
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
             await _userService.UpdateAsync(user);
-            // Redirect to login with success message
-            return RedirectToAction(nameof(Login), new { message = "Password updated successfully. Please login with your new password." });
+
+            // Only mark as verified if not already verified (for first-time password setup)
+            bool isAlreadyVerified = await _emailVerifService.IsVerifiedAsync(dto.Email);
+            if (!isAlreadyVerified)
+            {
+                await _emailVerifService.MarkVerifiedAsync(dto.Email);
+            }
+
+            return Ok(new
+            {
+                message = "Password updated successfully. Please login with your new password.",
+                redirectTo = "/api/auth/login"
+            });
         }
         catch (Exception ex)
         {

@@ -53,7 +53,7 @@ public class EmailVerificationService(IConfiguration config, IEmailVerificationR
     public async Task<bool> CorrectTempPasswordAsync(string email, string tempPassword)
     {
         var currentVerif = await _emailVerificationRepo.GetLatestVerificationAsync(email);
-        if (currentVerif == null || currentVerif.IsVerified || currentVerif.ExpiresAt < DateTime.UtcNow)
+        if (currentVerif == null || !currentVerif.IsVerified || currentVerif.ExpiresAt < DateTime.UtcNow)
             return false;
         return currentVerif.TempPassword == tempPassword;
     }
