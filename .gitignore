@@ -4,6 +4,9 @@
 .vscode/
 *.json
 *.sql
+.env
+.env.*
+!.env.example
 
 # User-specific files
 *.rsuser

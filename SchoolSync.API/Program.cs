@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using DotNetEnv;
 using SchoolSync.App.Extensions;
 using SchoolSync.Domain.Entities;
 using SchoolSync.Infra.Extensions;
@@ -10,6 +11,12 @@ using SchoolSync.API.Middleware;
 using SchoolSync.Infra.Persistence;
 using System.Reflection;
 using System.Text;
+
+var envPath = Path.Combine(Directory.GetCurrentDirectory(), ".env");
+if (File.Exists(envPath))
+{
+    Env.Load(envPath);
+}
 
 var builder = WebApplication.CreateBuilder(args);
 var jwtSettings = builder.Configuration.GetSection("Jwt");
